@@ -15,7 +15,8 @@ environment:
 
 dependencies:
   unified_distributor:
-    path: ../unified_distributor
+    git:
+      url:'https://github.com/dsc7219356/flutter_distributor/tree/main/packages/unified_distributor'
 
 dev_dependencies:
   dependency_validator: ^3.0.0
