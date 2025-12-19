@@ -14,7 +14,9 @@ dependencies:
   pubspec_parse: ^1.1.0
   recase: ^4.1.0
   shell_executor:
-    path: ../shell_executor
+    git:
+      url: https://github.com/dsc7219356/flutter_distributor.git
+      path: packages/shell_executor
 
 dev_dependencies:
   dependency_validator: ^3.0.0
