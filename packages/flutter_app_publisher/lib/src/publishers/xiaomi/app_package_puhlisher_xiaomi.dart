@@ -131,8 +131,8 @@ class AppPackagePublisherXiaoMi extends AppPackagePublisher {
   RSAPublicKey _parsePublicKey(String pem) {
     // 移除PEM格式的头部和尾部标记
     String publicKeyPEM = pem
-        .replaceAll('-----BEGIN PUBLIC KEY-----', '')
-        .replaceAll('-----END PUBLIC KEY-----', '')
+        .replaceAll('-----BEGIN CERTIFICATE-----', '')
+        .replaceAll('-----END CERTIFICATE-----', '')
         .replaceAll('\n', '')
         .replaceAll('\r', '');
 
