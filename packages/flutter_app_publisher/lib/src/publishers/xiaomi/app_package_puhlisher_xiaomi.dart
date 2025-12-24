@@ -145,8 +145,14 @@ class AppPackagePublisherXiaoMi extends AppPackagePublisher {
     Map<String, dynamic> data = {
       'RequestData': requestDataJson,
       'SIG': encryptedString, // 将加密后的数据发送
-      'apk':file,
-      'icon': File(icon)
+      'apk': await MultipartFile.fromFile(
+        file.path,
+        filename: file.uri.pathSegments.last,
+      ),
+      'icon': await MultipartFile.fromFile(
+        icon,
+        filename: File(icon).uri.pathSegments.last,
+      )
     };
 
 
