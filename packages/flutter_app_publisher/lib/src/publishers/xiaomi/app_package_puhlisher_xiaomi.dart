@@ -146,7 +146,7 @@ class AppPackagePublisherXiaoMi extends AppPackagePublisher {
       'RequestData': requestDataJson,
       'SIG': encryptedString,
       'apk': await MultipartFile.fromFile(file.path),
-      'icon': await MultipartFile.fromFile(icon),
+      'icon': await MultipartFile.fromFile(publishConfig.icon),
     });
 
     try {
