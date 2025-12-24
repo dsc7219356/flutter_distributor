@@ -148,10 +148,12 @@ class AppPackagePublisherXiaoMi extends AppPackagePublisher {
       'apk': await MultipartFile.fromFile(
         file.path,
         filename: file.uri.pathSegments.last,
+        contentType: DioMediaType.parse("application/octet-stream")
       ),
       'icon': await MultipartFile.fromFile(
         icon,
         filename: File(icon).uri.pathSegments.last,
+          contentType: DioMediaType.parse("application/octet-stream")
       )
     };
 
@@ -161,9 +163,13 @@ class AppPackagePublisherXiaoMi extends AppPackagePublisher {
         'https://api.developer.xiaomi.com/devupload/dev/push',
         data: data,
         options: Options(
-          contentType: Headers.multipartFormDataContentType, // 使用 multipart/form-data
-          responseType: ResponseType.json,
+          contentType: 'application/x-www-form-urlencoded; charset=utf-8',
+          responseType: ResponseType.json, // 确保响应解析为JSON
         ),
+        // options: Options(
+        //   contentType: Headers.multipartFormDataContentType, // 使用 multipart/form-data
+        //   responseType: ResponseType.json,
+        // ),
       );
       if (response.statusCode == 200 && response.data['result'] == 0) {
         return Map<String, dynamic>.from(response.data);
