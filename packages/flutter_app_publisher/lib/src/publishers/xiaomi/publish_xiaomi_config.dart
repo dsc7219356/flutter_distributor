@@ -25,7 +25,6 @@ class PublishAppXiaomiConfig extends PublishConfig {
 
     return PublishAppXiaomiConfig(
       clientSecret: clientSecret!,
-
     );
   }
 

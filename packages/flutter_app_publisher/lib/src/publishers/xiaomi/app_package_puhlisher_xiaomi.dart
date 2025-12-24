@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:asn1lib/asn1lib.dart';
-import 'package:crypto/crypto.dart';
+import 'package:crypto/crypto.dart' as crypto;
 import 'package:dio/dio.dart';
 import 'package:flutter_app_publisher/flutter_app_publisher.dart';
 import 'package:flutter_app_publisher/src/publishers/xiaomi/publish_xiaomi_config.dart';
@@ -35,6 +35,16 @@ class AppPackagePublisherXiaoMi extends AppPackagePublisher {
       environment,
       publishArguments,
     );
+    await getAppInfo(publishConfig.clientSecret);
+    await applyUpload(file,publishConfig.clientSecret);
+    return PublishResult(
+      url:
+      'https://developer.huawei.com/consumer/cn/service/josp/agc/index.html',
+    );
+  }
+
+  // 获取应用信息
+  Future<Map<String, dynamic>> getAppInfo(String clientSecret) async{
     Map requestData= {
       'packageName': 'cn.sigo',
       'userName':'yangrui@sigo.cn'
@@ -42,7 +52,7 @@ class AppPackagePublisherXiaoMi extends AppPackagePublisher {
     // 1. 将RequestData转换为JSON字符串
     String requestDataJson = jsonEncode(requestData);
     // 2. 计算RequestData JSON字符串的MD5哈希值（32位小写）
-    String md5Hash = md5.convert(utf8.encode(requestDataJson)).toString();
+    String md5Hash = crypto.md5.convert(utf8.encode(requestDataJson)).toString();
     // 3. 构建sig数组
     List<Map<String, String>> sig = [
       {
@@ -53,14 +63,14 @@ class AppPackagePublisherXiaoMi extends AppPackagePublisher {
     // 4. 构建最终的JSON对象
     Map<String, dynamic> finalJson = {
       'sig': sig,
-      'password': publishConfig.clientSecret
+      'password': clientSecret
     };
 
     // 5. 转换为JSON字符串
     String jsonString = jsonEncode(finalJson);
 
     // 6. 使用公钥加密（需要实现加密逻辑）
-    String encryptedString = await encryptWithPublicKey(jsonString,await getPublicKey());
+    String encryptedString = await encryptWithPublicKey(jsonString,getPublicKey());
 
     // 7. 构建请求数据
     Map<String, dynamic> data = {
@@ -70,24 +80,96 @@ class AppPackagePublisherXiaoMi extends AppPackagePublisher {
 
     try {
       Response response = await _dio.post(
-        'hhttps://api.developer.xiaomi.com/devupload/dev/query',
+        'https://api.developer.xiaomi.com/devupload/dev/query',
         data: data,
+        options: Options(
+          contentType: 'application/x-www-form-urlencoded; charset=utf-8',
+          responseType: ResponseType.json, // 确保响应解析为JSON
+        ),
       );
-      if (response.statusCode == 200) {
-        throw PublishError('getAccessToken error: ${response.data}');
-        // return response.data;
-        return PublishResult(
-            url:
-            'https://dev.mi.com/xiaomihyperos/console/apps/app-detail?appId=2882303761517570314&isOffStore=false');
+      if (response.statusCode == 200 && response.data['result'] == 0) {
+        return Map<String, dynamic>.from(response.data);
       } else {
-        throw PublishError('getAccessToken error: ${response.data}');
+        throw PublishError('applyUpload error: ${response.data}');
       }
     } catch (e) {
       throw PublishError(e.toString());
     }
   }
 
-  Future<String> getPublicKey() async {
+  // 上传应用信息
+  Future<Map<String,dynamic>> applyUpload(File file,String clientSecret) async {
+    Map appInfo = {
+      'appName':'视客眼镜网-美瞳隐形眼镜商城',
+      'packageName':'cn.sigo',
+      'updateDesc':'【视客SVIP】开卡礼赠、生日惊喜、更享折上折！ 【首单补贴】首单新人福利加码，立享百元礼包！买到就是省！ 【超值满赠】平台礼赠多多，邀请好友一起来，超多好礼等你来拿！ 【限时拼团】拼拼更划算，月抛到手9.9！ 【深浅瞳对比】对于不同瞳色（深中浅）的用户都提供了可参考的佩戴图，真实评价可同步生成美瞳记录册！ *视客销售所有商品均为官方授权正品，平台支持30天价保，承诺顺丰24h发货，终身无忧售后；还有专业医师线上问诊，守护你的眼部健康！'
+    ,
+      'privacyUrl':'https://m.vsigo.cn/privacyagreement',
+
+    };
+    Map requestData= {
+      'userName':'yangrui@sigo.cn',
+      'synchroType':1,
+      'appInfo':jsonEncode(appInfo)
+    };
+
+    String requestDataJson = jsonEncode(requestData);
+    // 2. 计算RequestData JSON字符串的MD5哈希值（32位小写）
+    String md5Hash = crypto.md5.convert(utf8.encode(requestDataJson)).toString();
+    // 3. 构建sig数组
+    List<Map<String, String>> sig = [
+      {
+        'name': 'RequestData',
+        'hash': md5Hash,
+      },
+      {
+        'name':'apk',
+        'hash':await _getFileMD5(file)
+      },
+      {
+        "name": "icon",
+        "hash": await _getFileMD5(File('/android/app/src/main/res/mipmap-xxxhdpi/logo.png'))
+      },
+
+    ];
+    // 4. 构建最终的JSON对象
+    Map<String, dynamic> finalJson = {
+      'sig': sig,
+      'password': clientSecret
+    };
+
+    // 5. 转换为JSON字符串
+    String jsonString = jsonEncode(finalJson);
+    String encryptedString = await encryptWithPublicKey(jsonString,getPublicKey());
+    // 7. 构建请求数据
+    Map<String, dynamic> data = {
+      'RequestData': requestDataJson,
+      'SIG': encryptedString, // 将加密后的数据发送
+      'apk':file,
+      'icon': File('/android/app/src/main/res/mipmap-xxxhdpi/logo.png')
+    };
+
+
+    try {
+      Response response = await _dio.post(
+        'https://api.developer.xiaomi.com/devupload/dev/push',
+        data: data,
+        options: Options(
+          contentType: 'application/x-www-form-urlencoded; charset=utf-8',
+          responseType: ResponseType.json, // 确保响应解析为JSON
+        ),
+      );
+      if (response.statusCode == 200 && response.data['result'] == 0) {
+        return Map<String, dynamic>.from(response.data);
+      } else {
+        throw PublishError('applyUpload error: ${response.data}');
+      }
+    } catch (e) {
+      throw PublishError(e.toString());
+    }
+  }
+
+  String getPublicKey()  {
     return '-----BEGIN CERTIFICATE-----MIICsjCCAhugAwIBAgIUbANcYrk1DOkSSBAxRZo+FcIru9wwDQYJKoZIhvcNAQEEBQAwajELMAkGA1UEBhMCQ04xEDAOBgNVBAgMB0JlaUppbmcxEDAOBgNVBAcMB0JlaUppbmcxDzANBgNVBAoMBnhpYW9taTENMAsGA1UECwwEbWl1aTEXMBUGA1UEAwwOZGV2LnhpYW9taS5jb20wIBcNMjMwMjIxMDIwOTA2WhgPMjEyMzAxMjgwMjA5MDZaMGoxCzAJBgNVBAYTAkNOMRAwDgYDVQQIDAdCZWlKaW5nMRAwDgYDVQQHDAdCZWlKaW5nMQ8wDQYDVQQKDAZ4aWFvbWkxDTALBgNVBAsMBG1pdWkxFzAVBgNVBAMMDmRldi54aWFvbWkuY29tMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDAX+S8xIjMtIvC3hDV1Pb9G0xeHKDP5C3yukb41kuvf+rVMTcSb4wxTWy7JlOMaRd6hWPUSNKskX+/aZin2FHlqJkAjP4SqNpSiG1le/0VYXmYRAtshm1DEcoCMyatwAoQU9jDtWu2wPSyDXL/sS5qMufpdzJ1cG1VKVrAvxiOfQIDAQABo1MwUTAdBgNVHQ4EFgQUSerMKItNhZ/Od9mhtMVd4vE/pBEwHwYDVR0jBBgwFoAUSerMKItNhZ/Od9mhtMVd4vE/pBEwDwYDVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0BAQQFAAOBgQCpyfyMQ1tXgiwbd6j4kU8suUwwFdRcpnjoABwndExs38XF7EoLcHFHpt3WUmIs4fdnOD6+549n0usGOCkRb8H47P7Y+qnJgH/YM42sZEp4vVHczr7MyOquQC/ZO5gnAwaYoVMkKqs06u5dP/MMoedva3PCu9tBkNSQpAnle2BiYg==-----END CERTIFICATE-----';
   }
 
@@ -127,7 +209,7 @@ class AppPackagePublisherXiaoMi extends AppPackagePublisher {
     return _bytesToHex(result);
   }
 
-  /// 解析PEM格式的公钥
+  /// 解析PEM格式的公钥（修复版本）
   RSAPublicKey _parsePublicKey(String pem) {
     // 移除PEM格式的头部和尾部标记
     String publicKeyPEM = pem
@@ -137,29 +219,77 @@ class AppPackagePublisherXiaoMi extends AppPackagePublisher {
         .replaceAll('\r', '');
 
     // 解码Base64
-    Uint8List keyBytes = base64Decode(publicKeyPEM);
+    Uint8List certBytes = base64Decode(publicKeyPEM);
 
-    // 使用ASN1解析器解析X.509格式的公钥
-    final parser = ASN1Parser(keyBytes);
-    final sequence = parser.nextObject() as ASN1Sequence;
+    try {
+      // 解析X.509证书
+      final parser = ASN1Parser(certBytes);
+      final certSequence = parser.nextObject() as ASN1Sequence;
 
-    // 获取模数和指数
-    ASN1Sequence keyInfo = sequence.elements[1] as ASN1Sequence;
-    ASN1BitString bitString = keyInfo.elements[1] as ASN1BitString;
+      // 遍历证书结构找到公钥部分
+      ASN1BitString? publicKeyBitString;
 
-    // 解析RSA公钥参数
-    final keyParser = ASN1Parser(bitString.encodedBytes);
-    final rsaKeySequence = keyParser.nextObject() as ASN1Sequence;
+      for (var element in certSequence.elements) {
+        if (element is ASN1Sequence) {
+          // 查找包含公钥信息的序列
+          for (var subElement in element.elements) {
+            if (subElement is ASN1BitString) {
+              publicKeyBitString = subElement;
+              break;
+            } else if (subElement is ASN1Sequence) {
+              // 检查是否是公钥信息部分
+              if (subElement.elements.length >= 2 &&
+                  subElement.elements[1] is ASN1BitString) {
+                publicKeyBitString = subElement.elements[1] as ASN1BitString;
+                break;
+              }
+            }
+          }
+          if (publicKeyBitString != null) break;
+        }
+      }
 
-    BigInt modulus = (rsaKeySequence.elements[0] as ASN1Integer).valueAsBigInteger!;
-    BigInt exponent = (rsaKeySequence.elements[1] as ASN1Integer).valueAsBigInteger!;
+      if (publicKeyBitString == null) {
+        throw Exception('无法找到公钥信息');
+      }
 
-    return RSAPublicKey(modulus, exponent);
+      // 将 List<int> 转换为 Uint8List
+      Uint8List publicKeyBytes = Uint8List.fromList(publicKeyBitString.stringValue);
+
+      // 解析RSA公钥参数
+      final keyParser = ASN1Parser(publicKeyBytes);
+      final rsaKeySequence = keyParser.nextObject() as ASN1Sequence;
+
+      BigInt modulus = (rsaKeySequence.elements[0] as ASN1Integer).valueAsBigInteger!;
+      BigInt exponent = (rsaKeySequence.elements[1] as ASN1Integer).valueAsBigInteger!;
+
+      return RSAPublicKey(modulus, exponent);
+    } catch (e) {
+      print('证书解析错误: $e');
+      rethrow;
+    }
   }
 
   /// 将字节数组转换为十六进制字符串
   String _bytesToHex(List<int> bytes) {
     return bytes.map((byte) => byte.toRadixString(16).padLeft(2, '0')).join('');
   }
+
+  /// 计算文件的MD5哈希值（32位小写）
+  Future<String> _getFileMD5(File file) async {
+    try {
+      // 读取文件内容
+      List<int> fileBytes = await file.readAsBytes();
+
+      // 使用crypto前缀的MD5函数
+      crypto.Digest digest = crypto.md5.convert(fileBytes);
+
+      // 返回32位小写的十六进制字符串
+      return digest.toString();
+    } catch (e) {
+      throw PublishError('计算文件MD5失败: $e');
+    }
+  }
+
 
 }
