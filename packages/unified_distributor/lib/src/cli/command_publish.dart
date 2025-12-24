@@ -21,6 +21,7 @@ class CommandPublish extends Command {
       'targets',
       aliases: ['target'],
       valueHelp: [
+        'xiaomi',
         'appgallery',
         'appstore',
         'fir',

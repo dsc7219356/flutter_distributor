@@ -87,27 +87,9 @@ class AppPackagePublisherXiaoMi extends AppPackagePublisher {
     }
   }
 
-  /// 获取公钥，从证书文件中读取
   Future<String> getPublicKey() async {
-    try {
-      // 使用绝对路径或包内资源路径
-      String publicKeyPath = 'packages/flutter_app_publisher/lib/src/publishers/xiaomi/dev.api.public.cer';
-
-      // 检查文件是否存在
-      File publicKeyFile = File(publicKeyPath);
-      if (!await publicKeyFile.exists()) {
-        throw PublishError('Public key file not found: $publicKeyPath');
-      }
-
-      // 读取公钥文件内容
-      String publicKeyContent = await publicKeyFile.readAsString();
-
-      return publicKeyContent;
-    } catch (e) {
-      throw PublishError('Failed to load public key: $e');
-    }
+    return '-----BEGIN CERTIFICATE-----MIICsjCCAhugAwIBAgIUbANcYrk1DOkSSBAxRZo+FcIru9wwDQYJKoZIhvcNAQEEBQAwajELMAkGA1UEBhMCQ04xEDAOBgNVBAgMB0JlaUppbmcxEDAOBgNVBAcMB0JlaUppbmcxDzANBgNVBAoMBnhpYW9taTENMAsGA1UECwwEbWl1aTEXMBUGA1UEAwwOZGV2LnhpYW9taS5jb20wIBcNMjMwMjIxMDIwOTA2WhgPMjEyMzAxMjgwMjA5MDZaMGoxCzAJBgNVBAYTAkNOMRAwDgYDVQQIDAdCZWlKaW5nMRAwDgYDVQQHDAdCZWlKaW5nMQ8wDQYDVQQKDAZ4aWFvbWkxDTALBgNVBAsMBG1pdWkxFzAVBgNVBAMMDmRldi54aWFvbWkuY29tMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDAX+S8xIjMtIvC3hDV1Pb9G0xeHKDP5C3yukb41kuvf+rVMTcSb4wxTWy7JlOMaRd6hWPUSNKskX+/aZin2FHlqJkAjP4SqNpSiG1le/0VYXmYRAtshm1DEcoCMyatwAoQU9jDtWu2wPSyDXL/sS5qMufpdzJ1cG1VKVrAvxiOfQIDAQABo1MwUTAdBgNVHQ4EFgQUSerMKItNhZ/Od9mhtMVd4vE/pBEwHwYDVR0jBBgwFoAUSerMKItNhZ/Od9mhtMVd4vE/pBEwDwYDVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0BAQQFAAOBgQCpyfyMQ1tXgiwbd6j4kU8suUwwFdRcpnjoABwndExs38XF7EoLcHFHpt3WUmIs4fdnOD6+549n0usGOCkRb8H47P7Y+qnJgH/YM42sZEp4vVHczr7MyOquQC/ZO5gnAwaYoVMkKqs06u5dP/MMoedva3PCu9tBkNSQpAnle2BiYg==-----END CERTIFICATE-----';
   }
-
 
   /// 使用公钥加密数据，对应Java中的encryptByPublicKey方法
   Future<String> encryptWithPublicKey(String data, String publicKeyPem) async {
