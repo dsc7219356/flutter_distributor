@@ -161,8 +161,8 @@ class AppPackagePublisherXiaoMi extends AppPackagePublisher {
         'https://api.developer.xiaomi.com/devupload/dev/push',
         data: data,
         options: Options(
-          contentType: 'application/x-www-form-urlencoded; charset=utf-8',
-          responseType: ResponseType.json, // 确保响应解析为JSON
+          contentType: Headers.multipartFormDataContentType, // 使用 multipart/form-data
+          responseType: ResponseType.json,
         ),
       );
       if (response.statusCode == 200 && response.data['result'] == 0) {
