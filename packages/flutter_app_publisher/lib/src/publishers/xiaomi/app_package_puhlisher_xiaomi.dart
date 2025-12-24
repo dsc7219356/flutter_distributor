@@ -35,11 +35,14 @@ class AppPackagePublisherXiaoMi extends AppPackagePublisher {
       environment,
       publishArguments,
     );
-    await getAppInfo(publishConfig.clientSecret);
-    await applyUpload(file,publishConfig.clientSecret,publishConfig.icon);
+    // await getAppInfo(publishConfig.clientSecret);
+    Map<String,dynamic> upload = await applyUpload(file,publishConfig,onPublishProgress);
+    if (upload.isEmpty) {
+      throw PublishError('UploadApp error');
+    }
     return PublishResult(
       url:
-      'https://developer.huawei.com/consumer/cn/service/josp/agc/index.html',
+      'https://dev.mi.com/xiaomihyperos/console/apps/distribute/version-revert?isOffStore=false&appId=2882303761517570314&packageName=cn.sigo&appType=0',
     );
   }
 
@@ -98,14 +101,12 @@ class AppPackagePublisherXiaoMi extends AppPackagePublisher {
   }
 
   // 上传应用信息
-  Future<Map<String,dynamic>> applyUpload(File file,String clientSecret,String icon) async {
+  Future<Map<String,dynamic>> applyUpload(File file, PublishAppXiaomiConfig publishConfig, PublishProgressCallback? onPublishProgress) async {
     Map appInfo = {
       'appName':'视客眼镜网-美瞳隐形眼镜商城',
       'packageName':'cn.sigo',
-      'updateDesc':'【视客SVIP】开卡礼赠、生日惊喜、更享折上折！ 【首单补贴】首单新人福利加码，立享百元礼包！买到就是省！ 【超值满赠】平台礼赠多多，邀请好友一起来，超多好礼等你来拿！ 【限时拼团】拼拼更划算，月抛到手9.9！ 【深浅瞳对比】对于不同瞳色（深中浅）的用户都提供了可参考的佩戴图，真实评价可同步生成美瞳记录册！ *视客销售所有商品均为官方授权正品，平台支持30天价保，承诺顺丰24h发货，终身无忧售后；还有专业医师线上问诊，守护你的眼部健康！'
-    ,
+      'updateDesc':publishConfig.updateDesc,
       'privacyUrl':'https://m.vsigo.cn/privacyagreement',
-
     };
     Map requestData= {
       'userName':'yangrui@sigo.cn',
@@ -128,34 +129,18 @@ class AppPackagePublisherXiaoMi extends AppPackagePublisher {
       },
       {
         "name": "icon",
-        "hash": await _getFileMD5(File(icon))
+        "hash": await _getFileMD5(File(publishConfig.icon))
       },
 
     ];
     // 4. 构建最终的JSON对象
     Map<String, dynamic> finalJson = {
       'sig': sig,
-      'password': clientSecret
+      'password': publishConfig.clientSecret
     };
-
     // 5. 转换为JSON字符串
     String jsonString = jsonEncode(finalJson);
     String encryptedString = await encryptWithPublicKey(jsonString,getPublicKey());
-    // // 7. 构建请求数据
-    // Map<String, dynamic> data = {
-    //   'RequestData': requestDataJson,
-    //   'SIG': encryptedString, // 将加密后的数据发送
-    //   'apk': await MultipartFile.fromFile(
-    //     file.path,
-    //     filename: file.uri.pathSegments.last,
-    //     contentType: DioMediaType.parse("application/octet-stream")
-    //   ),
-    //   'icon': await MultipartFile.fromFile(
-    //     icon,
-    //     filename: File(icon).uri.pathSegments.last,
-    //       contentType: DioMediaType.parse("application/octet-stream")
-    //   )
-    // };
 
     FormData formData = FormData.fromMap({
       'RequestData': requestDataJson,
@@ -168,14 +153,15 @@ class AppPackagePublisherXiaoMi extends AppPackagePublisher {
       Response response = await _dio.post(
         'https://api.developer.xiaomi.com/devupload/dev/push',
         data: formData,
-        // options: Options(
-        //   contentType: 'application/x-www-form-urlencoded; charset=utf-8',
-        //   responseType: ResponseType.json, // 确保响应解析为JSON
-        // ),
         options: Options(
           contentType: Headers.multipartFormDataContentType, // 使用 multipart/form-data
           responseType: ResponseType.json,
         ),
+        onSendProgress: (int sent, int total) {
+          if (onPublishProgress != null) {
+            onPublishProgress(sent, total);
+          }
+        },
       );
       if (response.statusCode == 200 && response.data['result'] == 0) {
         return Map<String, dynamic>.from(response.data);

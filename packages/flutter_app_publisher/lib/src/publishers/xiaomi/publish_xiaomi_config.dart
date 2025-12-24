@@ -5,11 +5,13 @@ import 'package:flutter_app_publisher/flutter_app_publisher.dart';
 
 const kEnvXiaoMiClientSecret = 'XIAOMI_SECRET';
 const kEnvXiaoMiIcon = 'XIAOMI_ICON';
+const kEnvXiaoMiUpdateDesc = 'UPDATE_DESC';
 
 class PublishAppXiaomiConfig extends PublishConfig {
   PublishAppXiaomiConfig({
     required this.clientSecret,
-    required this.icon
+    required this.icon,
+    required this.updateDesc,
   });
 
   factory PublishAppXiaomiConfig.parse(
@@ -33,12 +35,22 @@ class PublishAppXiaomiConfig extends PublishConfig {
       );
     }
 
+
+    String? updateDesc =
+    (environment ?? Platform.environment)[kEnvXiaoMiUpdateDesc];
+    if ((clientSecret ?? '').isEmpty) {
+      throw PublishError(
+        'Missing `$kEnvXiaoMiClientSecret` environment variable.',
+      );
+    }
+
     return PublishAppXiaomiConfig(
       clientSecret: clientSecret!,
-      icon: icon!,
+      icon: icon!, updateDesc:updateDesc!
     );
   }
 
   final String clientSecret;
   final String icon;
+  final String updateDesc;
 }
