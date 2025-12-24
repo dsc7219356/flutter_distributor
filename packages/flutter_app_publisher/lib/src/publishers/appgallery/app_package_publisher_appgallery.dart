@@ -54,7 +54,7 @@ class AppPackagePublisherAppGallery extends AppPackagePublisher {
       );
 
       // Apply Package Info (4/4)
-      await applyUpload(
+      await applyUploadAndroid(
         publishConfig.clientId,
         accessToken,
         publishConfig.appId,
@@ -156,13 +156,13 @@ class AppPackagePublisherAppGallery extends AppPackagePublisher {
     }
   }
 
-  Future<Map<String, dynamic>> applyUpload(
-    String clientId,
-    String accessToken,
-    String appId,
-    String fileName,
-    String objectId,
-  ) async {
+  Future<Map<String, dynamic>> applyUploadAndroid(
+      String clientId,
+      String accessToken,
+      String appId,
+      String fileName,
+      String objectId,
+      ) async {
     Map<String, dynamic> headers = {
       'client_id': clientId,
       'Authorization': 'Bearer $accessToken',
@@ -170,15 +170,20 @@ class AppPackagePublisherAppGallery extends AppPackagePublisher {
     Map<String, dynamic> query = {
       'appId': appId,
       'releaseType': 1,
-      'releasePhase': 0,
+      // 'releasePhase': 0,
     };
     Map<String, dynamic> data = {
-      'fileName': fileName,
-      'objectId': objectId,
+      'fileType':5,
+      'files':[
+        {
+          'fileName': fileName,
+          'fileDestUrl': objectId,
+        }
+      ]
     };
     try {
       Response response = await _dio.put(
-        'https://connect-api.cloud.huawei.com/api/publish/v3/app-package-info',
+        'https://connect-api.cloud.huawei.com/api/publish/v2/app-file-info',
         queryParameters: query,
         data: data,
         options: Options(headers: headers),
@@ -192,4 +197,41 @@ class AppPackagePublisherAppGallery extends AppPackagePublisher {
       throw PublishError('applyUpload error: ${e.toString()}');
     }
   }
+
+  // Future<Map<String, dynamic>> applyUpload(
+  //   String clientId,
+  //   String accessToken,
+  //   String appId,
+  //   String fileName,
+  //   String objectId,
+  // ) async {
+  //   Map<String, dynamic> headers = {
+  //     'client_id': clientId,
+  //     'Authorization': 'Bearer $accessToken',
+  //   };
+  //   Map<String, dynamic> query = {
+  //     'appId': appId,
+  //     'releaseType': 1,
+  //     'releasePhase': 0,
+  //   };
+  //   Map<String, dynamic> data = {
+  //     'fileName': fileName,
+  //     'objectId': objectId,
+  //   };
+  //   try {
+  //     Response response = await _dio.put(
+  //       'https://connect-api.cloud.huawei.com/api/publish/v3/app-package-info',
+  //       queryParameters: query,
+  //       data: data,
+  //       options: Options(headers: headers),
+  //     );
+  //     if (response.statusCode == 200 && response.data['ret']['code'] == 0) {
+  //       return Map<String, dynamic>.from(response.data);
+  //     } else {
+  //       throw PublishError('applyUpload error: ${response.data}');
+  //     }
+  //   } catch (e) {
+  //     throw PublishError('applyUpload error: ${e.toString()}');
+  //   }
+  // }
 }
