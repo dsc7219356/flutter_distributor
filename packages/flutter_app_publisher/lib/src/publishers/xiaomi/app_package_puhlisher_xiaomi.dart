@@ -141,35 +141,41 @@ class AppPackagePublisherXiaoMi extends AppPackagePublisher {
     // 5. 转换为JSON字符串
     String jsonString = jsonEncode(finalJson);
     String encryptedString = await encryptWithPublicKey(jsonString,getPublicKey());
-    // 7. 构建请求数据
-    Map<String, dynamic> data = {
-      'RequestData': requestDataJson,
-      'SIG': encryptedString, // 将加密后的数据发送
-      'apk': await MultipartFile.fromFile(
-        file.path,
-        filename: file.uri.pathSegments.last,
-        contentType: DioMediaType.parse("application/octet-stream")
-      ),
-      'icon': await MultipartFile.fromFile(
-        icon,
-        filename: File(icon).uri.pathSegments.last,
-          contentType: DioMediaType.parse("application/octet-stream")
-      )
-    };
+    // // 7. 构建请求数据
+    // Map<String, dynamic> data = {
+    //   'RequestData': requestDataJson,
+    //   'SIG': encryptedString, // 将加密后的数据发送
+    //   'apk': await MultipartFile.fromFile(
+    //     file.path,
+    //     filename: file.uri.pathSegments.last,
+    //     contentType: DioMediaType.parse("application/octet-stream")
+    //   ),
+    //   'icon': await MultipartFile.fromFile(
+    //     icon,
+    //     filename: File(icon).uri.pathSegments.last,
+    //       contentType: DioMediaType.parse("application/octet-stream")
+    //   )
+    // };
 
+    FormData formData = FormData.fromMap({
+      'RequestData': requestDataJson,
+      'SIG': encryptedString,
+      'apk': await MultipartFile.fromFile(file.path),
+      'icon': await MultipartFile.fromFile(icon),
+    });
 
     try {
       Response response = await _dio.post(
         'https://api.developer.xiaomi.com/devupload/dev/push',
-        data: data,
-        options: Options(
-          contentType: 'application/x-www-form-urlencoded; charset=utf-8',
-          responseType: ResponseType.json, // 确保响应解析为JSON
-        ),
+        data: formData,
         // options: Options(
-        //   contentType: Headers.multipartFormDataContentType, // 使用 multipart/form-data
-        //   responseType: ResponseType.json,
+        //   contentType: 'application/x-www-form-urlencoded; charset=utf-8',
+        //   responseType: ResponseType.json, // 确保响应解析为JSON
         // ),
+        options: Options(
+          contentType: Headers.multipartFormDataContentType, // 使用 multipart/form-data
+          responseType: ResponseType.json,
+        ),
       );
       if (response.statusCode == 200 && response.data['result'] == 0) {
         return Map<String, dynamic>.from(response.data);
