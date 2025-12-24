@@ -36,7 +36,7 @@ class AppPackagePublisherXiaoMi extends AppPackagePublisher {
       publishArguments,
     );
     await getAppInfo(publishConfig.clientSecret);
-    await applyUpload(file,publishConfig.clientSecret);
+    await applyUpload(file,publishConfig.clientSecret,publishConfig.icon);
     return PublishResult(
       url:
       'https://developer.huawei.com/consumer/cn/service/josp/agc/index.html',
@@ -98,7 +98,7 @@ class AppPackagePublisherXiaoMi extends AppPackagePublisher {
   }
 
   // 上传应用信息
-  Future<Map<String,dynamic>> applyUpload(File file,String clientSecret) async {
+  Future<Map<String,dynamic>> applyUpload(File file,String clientSecret,String icon) async {
     Map appInfo = {
       'appName':'视客眼镜网-美瞳隐形眼镜商城',
       'packageName':'cn.sigo',
@@ -128,7 +128,7 @@ class AppPackagePublisherXiaoMi extends AppPackagePublisher {
       },
       {
         "name": "icon",
-        "hash": await _getFileMD5(File('/android/app/src/main/res/mipmap-xxxhdpi/logo.png'))
+        "hash": await _getFileMD5(File(icon))
       },
 
     ];
@@ -146,7 +146,7 @@ class AppPackagePublisherXiaoMi extends AppPackagePublisher {
       'RequestData': requestDataJson,
       'SIG': encryptedString, // 将加密后的数据发送
       'apk':file,
-      'icon': File('/android/app/src/main/res/mipmap-xxxhdpi/logo.png')
+      'icon': File(icon)
     };
 
 
