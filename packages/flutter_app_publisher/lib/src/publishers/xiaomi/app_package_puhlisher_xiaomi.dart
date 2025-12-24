@@ -90,17 +90,24 @@ class AppPackagePublisherXiaoMi extends AppPackagePublisher {
   /// 获取公钥，从证书文件中读取
   Future<String> getPublicKey() async {
     try {
-      // 构建公钥文件路径
-      String publicKeyPath = './dev.api.public.cer';
+      // 使用绝对路径或包内资源路径
+      String publicKeyPath = 'packages/flutter_app_publisher/lib/src/publishers/xiaomi/dev.api.public.cer';
+
+      // 检查文件是否存在
+      File publicKeyFile = File(publicKeyPath);
+      if (!await publicKeyFile.exists()) {
+        throw PublishError('Public key file not found: $publicKeyPath');
+      }
 
       // 读取公钥文件内容
-      String publicKeyContent = await File(publicKeyPath).readAsString();
+      String publicKeyContent = await publicKeyFile.readAsString();
 
       return publicKeyContent;
     } catch (e) {
       throw PublishError('Failed to load public key: $e');
     }
   }
+
 
   /// 使用公钥加密数据，对应Java中的encryptByPublicKey方法
   Future<String> encryptWithPublicKey(String data, String publicKeyPem) async {
