@@ -21,6 +21,9 @@ dependencies:
     git:
       url: https://github.com/dsc7219356/flutter_distributor.git
       path: packages/shell_executor
+  pointycastle: 3.7.3
+  asn1lib: 1.4.1
+
 
 dev_dependencies:
   dependency_validator: ^3.0.0

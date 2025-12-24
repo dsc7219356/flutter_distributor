@@ -7,6 +7,7 @@ class FlutterAppPublisher {
   final List<AppPackagePublisher> _publishers = [
     AppPackagePublisherAppCenter(),
     AppPackagePublisherAppGallery(),
+    AppPackagePublisherXiaoMi(),
     AppPackagePublisherAppStore(),
     AppPackagePublisherFir(),
     AppPackagePublisherFirebase(),
