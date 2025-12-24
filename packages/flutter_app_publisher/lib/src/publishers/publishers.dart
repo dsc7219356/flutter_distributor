@@ -8,3 +8,4 @@ export 'pgyer/app_package_publisher_pgyer.dart';
 export 'playstore/app_package_publisher_playstore.dart';
 export 'qiniu/app_package_publisher_qiniu.dart';
 export 'vercel/app_package_publisher_vercel.dart';
+export 'appgallery/app_package_publisher_appgallery.dart';
