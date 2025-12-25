@@ -47,7 +47,7 @@ class AppPackagePublisherXiaoMi extends AppPackagePublisher {
   }
 
   // 获取应用信息
-  Future<Map<String, dynamic>> getAppInfo(String clientSecret) async{
+  Future<Map<String, dynamic>> getAppInfo(PublishAppXiaomiConfig publishConfig) async{
     Map requestData= {
       'packageName': 'cn.sigo',
       'userName':'yangrui@sigo.cn'
@@ -66,14 +66,14 @@ class AppPackagePublisherXiaoMi extends AppPackagePublisher {
     // 4. 构建最终的JSON对象
     Map<String, dynamic> finalJson = {
       'sig': sig,
-      'password': clientSecret
+      'password': publishConfig.clientSecret
     };
 
     // 5. 转换为JSON字符串
     String jsonString = jsonEncode(finalJson);
 
     // 6. 使用公钥加密（需要实现加密逻辑）
-    String encryptedString = await encryptWithPublicKey(jsonString,getPublicKey());
+    String encryptedString = await encryptWithPublicKey(jsonString,await getPublicKeyFromFile(publishConfig.cer));
 
     // 7. 构建请求数据
     Map<String, dynamic> data = {
@@ -186,9 +186,6 @@ class AppPackagePublisherXiaoMi extends AppPackagePublisher {
     } catch (e) {
       throw PublishError('读取公钥文件失败: $e');
     }
-  }
-  String getPublicKey()  {
-    return '-----BEGIN CERTIFICATE-----MIICsjCCAhugAwIBAgIUbANcYrk1DOkSSBAxRZo+FcIru9wwDQYJKoZIhvcNAQEEBQAwajELMAkGA1UEBhMCQ04xEDAOBgNVBAgMB0JlaUppbmcxEDAOBgNVBAcMB0JlaUppbmcxDzANBgNVBAoMBnhpYW9taTENMAsGA1UECwwEbWl1aTEXMBUGA1UEAwwOZGV2LnhpYW9taS5jb20wIBcNMjMwMjIxMDIwOTA2WhgPMjEyMzAxMjgwMjA5MDZaMGoxCzAJBgNVBAYTAkNOMRAwDgYDVQQIDAdCZWlKaW5nMRAwDgYDVQQHDAdCZWlKaW5nMQ8wDQYDVQQKDAZ4aWFvbWkxDTALBgNVBAsMBG1pdWkxFzAVBgNVBAMMDmRldi54aWFvbWkuY29tMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDAX+S8xIjMtIvC3hDV1Pb9G0xeHKDP5C3yukb41kuvf+rVMTcSb4wxTWy7JlOMaRd6hWPUSNKskX+/aZin2FHlqJkAjP4SqNpSiG1le/0VYXmYRAtshm1DEcoCMyatwAoQU9jDtWu2wPSyDXL/sS5qMufpdzJ1cG1VKVrAvxiOfQIDAQABo1MwUTAdBgNVHQ4EFgQUSerMKItNhZ/Od9mhtMVd4vE/pBEwHwYDVR0jBBgwFoAUSerMKItNhZ/Od9mhtMVd4vE/pBEwDwYDVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0BAQQFAAOBgQCpyfyMQ1tXgiwbd6j4kU8suUwwFdRcpnjoABwndExs38XF7EoLcHFHpt3WUmIs4fdnOD6+549n0usGOCkRb8H47P7Y+qnJgH/YM42sZEp4vVHczr7MyOquQC/ZO5gnAwaYoVMkKqs06u5dP/MMoedva3PCu9tBkNSQpAnle2BiYg==-----END CERTIFICATE-----';
   }
 
   /// 使用公钥加密数据，对应Java中的encryptByPublicKey方法
