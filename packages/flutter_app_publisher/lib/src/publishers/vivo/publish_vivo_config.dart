@@ -31,11 +31,6 @@ class PublishVivoConfig extends PublishConfig {
       );
     }
 
-    String? appId = publishArguments?['app-id'];
-    if ((appId ?? '').isEmpty) {
-      throw PublishError('Missing `app-id` arg');
-    }
-
     return PublishVivoConfig(
       clientId: clientId!,
       clientSecret: clientSecret!,
