@@ -272,6 +272,7 @@ class CommandPublish extends Command {
 
     Map<String, String?> publishArguments = {
       'app-version': argResults?['app-version'],
+      'honor-app-id':argResults?['honor-app-id'],
       'appgallery-app-id': argResults?['appgallery-app-id'],
       'firebase-app': argResults?['firebase-app'],
       'firebase-release-notes': argResults?['firebase-release-notes'],
