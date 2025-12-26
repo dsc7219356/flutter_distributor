@@ -83,6 +83,7 @@ class AppPackagePublisherHonor extends AppPackagePublisher {
         data: data,
         options: Options(
           contentType: 'application/x-www-form-urlencoded',
+          responseType: ResponseType.json,
         ),
       );
       if (response.statusCode == 200 && response.data['access_token'] != null) {
