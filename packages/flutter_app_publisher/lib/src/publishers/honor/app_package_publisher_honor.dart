@@ -99,7 +99,7 @@ class AppPackagePublisherHonor extends AppPackagePublisher {
   Future<Map<String, dynamic>> getUploadUrl(
       String clientId, String accessToken, String appId, String fileName, int contentLength, File file) async {
     List query = [
-      {'fileName': fileName, 'fileType': 100, 'fileSize': contentLength, 'fileSha256': getFileSha256(file)}
+      {'fileName': fileName, 'fileType': 100, 'fileSize': contentLength, 'fileSha256':await getFileSha256(file)}
     ];
     try {
       Response response = await _dio.post(
@@ -110,7 +110,7 @@ class AppPackagePublisherHonor extends AppPackagePublisher {
         }, contentType: 'application/json'),
       );
       if (response.data['code'] == 0) {
-        return Map<String, dynamic>.from(response.data[0]['FileUploadPath']);
+        return Map<String, dynamic>.from(response.data['data'][0]);
       } else {
         throw PublishError('getUploadUrl error: ${response.data}');
       }
