@@ -12,7 +12,7 @@ class AppPackagePublisherVivo extends AppPackagePublisher {
   final Dio _dio = Dio();
 
   @override
-  String get name => 'honor';
+  String get name => 'vivo';
 
   @override
   List<String> get supportedPlatforms => ['android'];
