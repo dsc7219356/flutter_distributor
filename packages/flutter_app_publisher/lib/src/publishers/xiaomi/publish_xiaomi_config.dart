@@ -4,9 +4,7 @@ import 'package:flutter_app_publisher/flutter_app_publisher.dart';
 
 
 const kEnvXiaoMiClientSecret = 'XIAOMI_SECRET';
-const kEnvXiaoMiIcon = 'XIAOMI_ICON';
-const kEnvXiaoMiUpdateDesc = 'UPDATE_DESC';
-const kEnvXiaoMiPublicCer = 'XIAOMI_CER';
+
 
 class PublishAppXiaomiConfig extends PublishConfig {
   PublishAppXiaomiConfig({
@@ -29,37 +27,22 @@ class PublishAppXiaomiConfig extends PublishConfig {
       );
     }
 
-    String? icon =
-    (environment ?? Platform.environment)[kEnvXiaoMiIcon];
-    if ((clientSecret ?? '').isEmpty) {
-      throw PublishError(
-        'Missing `$kEnvXiaoMiClientSecret` environment variable.',
-      );
-    }
-
-
-    String? updateDesc =
-    (environment ?? Platform.environment)[kEnvXiaoMiUpdateDesc];
-    if ((clientSecret ?? '').isEmpty) {
-      throw PublishError(
-        'Missing `$kEnvXiaoMiClientSecret` environment variable.',
-      );
-    }
-
-    String? cer =
-    (environment ?? Platform.environment)[kEnvXiaoMiPublicCer];
-    if ((clientSecret ?? '').isEmpty) {
-      throw PublishError(
-        'Missing `$kEnvXiaoMiClientSecret` environment variable.',
-      );
-    }
-
     return PublishAppXiaomiConfig(
       clientSecret: clientSecret!,
-      icon: icon!,
-      updateDesc:updateDesc!,
-      cer: cer!,
+      icon:  _parseString(publishArguments?['icon'])??'',
+      updateDesc:
+        _parseString(publishArguments?['update-description'])??'',
+      cer: _parseString(publishArguments?['cer'])??'',
     );
+  }
+
+  /// 解析字符串值
+  ///
+  /// 支持将任意类型安全转换为字符串；空字符串将按原样保留
+  static String? _parseString(dynamic value) {
+    if (value == null) return null;
+    if (value is String) return value;
+    return value.toString();
   }
 
   final String clientSecret;
