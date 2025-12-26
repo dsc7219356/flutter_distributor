@@ -64,7 +64,7 @@ class AppPackagePublisherAppGallery extends AppPackagePublisher {
 
       return PublishResult(
         url:
-            'https://developer.huawei.com/consumer/cn/service/josp/agc/index.html',
+            'https://developer.huawei.com/consumer/cn/service/josp/agc/index.html#/myApp/10778152/v1847767732263617280',
       );
     } catch (e) {
       throw PublishError(e.toString());

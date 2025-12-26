@@ -109,7 +109,7 @@ class AppPackagePublisherHonor extends AppPackagePublisher {
           'Authorization': 'Bearer $accessToken',
         }, contentType: 'application/json'),
       );
-      if (response.data?['ret']?['code'] == 0) {
+      if (response.data['code'] == 0) {
         return Map<String, dynamic>.from(response.data[0]['FileUploadPath']);
       } else {
         throw PublishError('getUploadUrl error: ${response.data}');
