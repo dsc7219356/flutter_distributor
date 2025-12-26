@@ -86,9 +86,13 @@ class AppPackagePublisherVivo extends AppPackagePublisher {
         },
       );
       if (response.statusCode == 200 && response.data['code'] == 0) {
-        print('上传成功，等待下一步发布');
-        print(response.data);
-        return response.data['data'];
+        if( response.data['subCode']=='0'){
+          print('上传成功，等待下一步发布');
+          return response.data['data'];
+        } else {
+          print(response.data['msg']);
+          throw PublishError('applyUpload error: ${response.data}');
+        }
       } else {
         throw PublishError('upload error: ${response.data}');
       }
@@ -142,6 +146,12 @@ class AppPackagePublisherVivo extends AppPackagePublisher {
         ),
       );
       if (response.statusCode == 200 && response.data['code'] == 0) {
+        if(response.data['subCode'] =='0'){
+          print('应用提审');
+        } else {
+          print(response.data['msg']);
+          throw PublishError('applyUpload error: ${response.data}');
+        }
         return Map<String, dynamic>.from(response.data);
       } else {
         throw PublishError('applyUpload error: ${response.data}');
