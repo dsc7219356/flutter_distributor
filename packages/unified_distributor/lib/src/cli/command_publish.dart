@@ -31,6 +31,7 @@ class CommandPublish extends Command {
         'pgyer',
         'qiniu',
         'vercel',
+        'honor'
       ].join(','),
       help: 'The target provider(s) to publish to.',
     );
@@ -51,6 +52,15 @@ class CommandPublish extends Command {
       valueHelp: '',
       help: 'The unique ID of the application on AppGallery.',
     );
+
+    // honor
+    argParser.addSeparator('honor');
+    argParser.addOption(
+      'honor-app-id',
+      valueHelp: '',
+      help: 'The unique ID of the application on honor.',
+    );
+
 
     // Firebase
     argParser.addSeparator('firebase');
