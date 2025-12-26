@@ -164,6 +164,7 @@ class AppPackagePublisherXiaoMi extends AppPackagePublisher {
         },
       );
       if (response.statusCode == 200 && response.data['result'] == 0) {
+        print('上传成功，提审中...');
         return Map<String, dynamic>.from(response.data);
       } else {
         throw PublishError('applyUpload error: ${response.data}');
