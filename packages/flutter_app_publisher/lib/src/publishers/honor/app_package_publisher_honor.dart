@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_app_publisher/flutter_app_publisher.dart';
-import 'package:flutter_app_publisher/src/publishers/appgallery/publish_appgallery_config.dart';
 import 'package:crypto/crypto.dart' as crypto;
+import 'package:flutter_app_publisher/src/publishers/honor/publish_honor_config.dart';
 
 /// HONOR Connect publishing API doc
 /// [https://developer.honor.com/cn/doc/guides/101359#h2-1712046097865]
@@ -24,7 +24,7 @@ class AppPackagePublisherHonor extends AppPackagePublisher {
     PublishProgressCallback? onPublishProgress,
   }) async {
     File file = fileSystemEntity as File;
-    PublishAppGalleryConfig publishConfig = PublishAppGalleryConfig.parse(
+    PublishHonorConfig publishConfig = PublishHonorConfig.parse(
       environment,
       publishArguments,
     );
