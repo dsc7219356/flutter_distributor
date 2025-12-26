@@ -87,7 +87,7 @@ class AppPackagePublisherVivo extends AppPackagePublisher {
       );
       if (response.statusCode == 200 && response.data['code'] == 0) {
         print('上传成功，等待下一步发布');
-        print(response.data['data']);
+        print(response.data);
         return response.data['data'];
       } else {
         throw PublishError('upload error: ${response.data}');
