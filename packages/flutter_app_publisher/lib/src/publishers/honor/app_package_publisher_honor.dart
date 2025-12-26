@@ -81,10 +81,10 @@ class AppPackagePublisherHonor extends AppPackagePublisher {
       Response response = await _dio.post(
         'https://iam.developer.honor.com/auth/token',
         data: data,
-        options: Options(
-          contentType: 'application/x-www-form-urlencoded',
-          responseType: ResponseType.json,
-        ),
+        // options: Options(
+        //   contentType: 'application/x-www-form-urlencoded',
+        //   responseType: ResponseType.json,
+        // ),
       );
       if (response.statusCode == 200 && response.data['access_token'] != null) {
         return response.data['access_token'];
