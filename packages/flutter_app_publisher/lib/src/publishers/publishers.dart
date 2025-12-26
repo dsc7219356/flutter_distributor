@@ -11,3 +11,4 @@ export 'vercel/app_package_publisher_vercel.dart';
 export 'appgallery/app_package_publisher_appgallery.dart';
 export 'xiaomi/app_package_puhlisher_xiaomi.dart';
 export 'honor/app_package_publisher_honor.dart';
+export 'vivo/app_package_publisher_vivo.dart';
