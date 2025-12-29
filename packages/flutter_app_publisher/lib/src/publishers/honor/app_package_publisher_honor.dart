@@ -158,11 +158,13 @@ class AppPackagePublisherHonor extends AppPackagePublisher {
     String fileName,
     String objectId,
   ) async {
-    List data = [
-      {
-        'objectId': objectId,
-      }
-    ];
+    Map data = {
+      'bindingFileList':[
+        {
+          'objectId': objectId,
+        }
+      ]
+    };
     try {
       Response response = await _dio.post(
         'https://appmarket-openapi-drcn.cloud.honor.com/openapi/v1/publish/update-file-info?appId=${appId}',
