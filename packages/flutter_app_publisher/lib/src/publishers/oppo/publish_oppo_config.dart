@@ -26,10 +26,10 @@ class PublishAppOppoConfig extends PublishConfig {
       );
     }
     String? clientSecret =
-        (environment ?? Platform.environment)[kEnvOPPOClientId];
+        (environment ?? Platform.environment)[kEnvOPPOClientSecret];
     if ((clientSecret ?? '').isEmpty) {
       throw PublishError(
-        'Missing `$kEnvOPPOClientId` environment variable.',
+        'Missing `$kEnvOPPOClientSecret` environment variable.',
       );
     }
     return PublishAppOppoConfig(
