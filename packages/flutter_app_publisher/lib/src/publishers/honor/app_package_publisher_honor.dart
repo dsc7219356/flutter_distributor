@@ -57,7 +57,7 @@ class AppPackagePublisherHonor extends AppPackagePublisher {
         accessToken,
         publishConfig.appId,
         fileName,
-        uploadUrlInfo['objectId'],
+        uploadUrlInfo,
       );
 
       return PublishResult(
@@ -155,13 +155,12 @@ class AppPackagePublisherHonor extends AppPackagePublisher {
     String clientId,
     String accessToken,
     String appId,
-    String fileName,
-    String objectId,
+    String fileName, Map<String, dynamic> urlInfo,
   ) async {
     Map data = {
       'bindingFileList':[
         {
-          'objectId': objectId,
+          'objectId': urlInfo['objectId'],
         }
       ]
     };
