@@ -54,28 +54,30 @@ class AppPackagePublisherVivo extends AppPackagePublisher {
     try {
       int timestamp = DateTime.now().millisecondsSinceEpoch;
       Map<String, dynamic> params = {
+        "method": "app.upload.apk.app",
         "access_key": publishConfig.clientId,
         "timestamp": timestamp.toString(),
-        "method": "app.upload.apk.app",
+        "format": "json",
         "v": "1.0",
         "sign_method": "HMAC-SHA256",
-        "format": "json",
         "target_app_key": "developer",
         'packageName': 'cn.sigo',
         'fileMd5': fileMd5
       };
+      // 生成签名
+      String sign = getSign(params, publishConfig.clientSecret);
       FormData formData = FormData.fromMap({
         'file': await MultipartFile.fromFile(file.path),
         'method': 'app.upload.apk.app',
         'access_key': publishConfig.clientId,
         'timestamp': timestamp.toString(),
         'format': 'json',
-        'v': 1.0,
+        'v': '1.0',
         'sign_method': 'HMAC-SHA256',
         'target_app_key': 'developer',
         'packageName': 'cn.sigo',
-        'sign': getSign(params, publishConfig.clientSecret),
         'fileMd5': fileMd5,
+        'sign':sign
       });
       Response response = await _dio.post(
         'https://developer-api.vivo.com.cn/router/rest',
@@ -107,7 +109,6 @@ class AppPackagePublisherVivo extends AppPackagePublisher {
   Future<Map<String, dynamic>> updateApp(String apk,PublishVivoConfig publishConfig,File file,String fileMd5) async{
     int timestamp = DateTime.now().millisecondsSinceEpoch;
     AppPackage appPackage = await parseAppPackage(file);
-    String fileMd5 = await getFileSha256(file);
     Map<String, dynamic> params = {
       "access_key": publishConfig.clientId,
       "timestamp": timestamp.toString(),
@@ -128,7 +129,7 @@ class AppPackagePublisherVivo extends AppPackagePublisher {
       'access_key': publishConfig.clientId,
       'timestamp': timestamp.toString(),
       'format': 'json',
-      'v': 1.0,
+      'v': '1.0',
       'sign_method': 'HMAC-SHA256',
       'target_app_key': 'developer',
       'packageName': 'cn.sigo',
