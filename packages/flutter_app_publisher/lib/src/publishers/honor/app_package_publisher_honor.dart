@@ -60,6 +60,8 @@ class AppPackagePublisherHonor extends AppPackagePublisher {
         uploadUrlInfo,
       );
 
+      await publishHonor(accessToken, publishConfig.appId);
+
       return PublishResult(
         url: 'https://developer.honor.com/cn/manageCenter/app/E00006?~id=11',
       );
@@ -176,6 +178,29 @@ class AppPackagePublisherHonor extends AppPackagePublisher {
         return Map<String, dynamic>.from(response.data);
       } else {
         throw PublishError('applyUpload error: ${response.data}');
+      }
+    } catch (e) {
+      throw PublishError('applyUpload error: ${e.toString()}');
+    }
+  }
+
+  Future<void>publishHonor(
+      String accessToken,
+      String appId,
+      ) async{
+
+    try {
+      Response response = await _dio.post(
+        'https://appmarket-openapi-drcn.cloud.honor.com/openapi/v1/publish/submit-audit?appId=${appId}',
+        data: {
+          'releaseType':1,
+        },
+        options: Options(headers: {
+          'Authorization': 'Bearer $accessToken',
+        }, contentType: 'application/json'),
+      );
+      if (response.statusCode != 200 || response.data['code'] != 0) {
+        throw PublishError('uploadFile error: ${response.data}');
       }
     } catch (e) {
       throw PublishError('applyUpload error: ${e.toString()}');
