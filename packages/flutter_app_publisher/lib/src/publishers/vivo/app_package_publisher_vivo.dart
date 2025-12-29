@@ -30,7 +30,7 @@ class AppPackagePublisherVivo extends AppPackagePublisher {
       environment,
       publishArguments,
     );
-    String fileMd5 = 'a84bdf6a4753eee0c1b4e01381421bef';
+    String fileMd5 = '13695fa112b009ae2ce286b630440f97';
     Map<String, dynamic> uploadResult = await uploadFile(
       publishConfig,
       file,
