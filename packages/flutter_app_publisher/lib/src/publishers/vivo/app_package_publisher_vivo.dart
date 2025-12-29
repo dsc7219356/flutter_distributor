@@ -118,7 +118,7 @@ class AppPackagePublisherVivo extends AppPackagePublisher {
       "format": "json",
       "target_app_key": "developer",
       'packageName': 'cn.sigo',
-      'versionCode': appPackage.version,
+      'versionCode': appPackage.buildNumber,
       'apk':apk,
       'fileMd5':fileMd5,
       'onlineType':1,
@@ -134,7 +134,7 @@ class AppPackagePublisherVivo extends AppPackagePublisher {
       'target_app_key': 'developer',
       'packageName': 'cn.sigo',
       'sign': getSign(params, publishConfig.clientSecret),
-      'versionCode': appPackage.version,
+      'versionCode': appPackage.buildNumber,
       'apk':apk,
       'fileMd5':fileMd5,
       'onlineType':1,
@@ -165,11 +165,6 @@ class AppPackagePublisherVivo extends AppPackagePublisher {
     }
   }
 
-  Future<String> getFileSha256(File file) async {
-    List<int> fileBytes = await file.readAsBytes();
-    Digest digest = sha256.convert(fileBytes);
-    return digest.toString();
-  }
 
    String hmacSHA256(String data, String key) {
     var keyBytes = utf8.encode(key);
