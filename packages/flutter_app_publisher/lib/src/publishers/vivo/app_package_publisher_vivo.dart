@@ -30,13 +30,15 @@ class AppPackagePublisherVivo extends AppPackagePublisher {
       environment,
       publishArguments,
     );
+    String fileMd5 = await getFileSha256(file);
     Map<String, dynamic> uploadResult = await uploadFile(
       publishConfig,
       file,
+      fileMd5,
       onPublishProgress,
     );
     print(uploadResult);
-    await updateApp(uploadResult['serialnumber'],publishConfig,file);
+    await updateApp(uploadResult['serialnumber'],publishConfig,file,fileMd5);
     return PublishResult(
       url: 'https://dev.vivo.com.cn/app/appService/166035',
     );
@@ -45,11 +47,12 @@ class AppPackagePublisherVivo extends AppPackagePublisher {
   Future<Map<String, dynamic>> uploadFile(
     PublishVivoConfig publishConfig,
     File file,
+    String fileMd5,
     PublishProgressCallback? onPublishProgress,
+
   ) async {
     try {
       int timestamp = DateTime.now().millisecondsSinceEpoch;
-      String fileMd5 = await getFileSha256(file);
       Map<String, dynamic> params = {
         "access_key": publishConfig.clientId,
         "timestamp": timestamp.toString(),
@@ -101,7 +104,7 @@ class AppPackagePublisherVivo extends AppPackagePublisher {
     }
   }
 
-  Future<Map<String, dynamic>> updateApp(String apk,PublishVivoConfig publishConfig,File file) async{
+  Future<Map<String, dynamic>> updateApp(String apk,PublishVivoConfig publishConfig,File file,String fileMd5) async{
     int timestamp = DateTime.now().millisecondsSinceEpoch;
     AppPackage appPackage = await parseAppPackage(file);
     String fileMd5 = await getFileSha256(file);
