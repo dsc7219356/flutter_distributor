@@ -59,7 +59,7 @@ class AppPackagePublisherVivo extends AppPackagePublisher {
         "timestamp": timestamp.toString(),
         "format": "json",
         "v": "1.0",
-        "sign_method": "HMAC-SHA256",
+        "sign_method": "hmac",
         "target_app_key": "developer",
         'packageName': 'cn.sigo',
         'fileMd5': fileMd5
@@ -73,7 +73,7 @@ class AppPackagePublisherVivo extends AppPackagePublisher {
         'timestamp': timestamp.toString(),
         'format': 'json',
         'v': '1.0',
-        'sign_method': 'HMAC-SHA256',
+        'sign_method': 'hmac',
         'target_app_key': 'developer',
         'packageName': 'cn.sigo',
         'fileMd5': fileMd5,
