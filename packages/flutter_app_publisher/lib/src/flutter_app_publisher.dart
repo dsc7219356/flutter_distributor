@@ -18,7 +18,8 @@ class FlutterAppPublisher {
     AppPackagePublisherPlayStore(),
     AppPackagePublisherQiniu(),
     AppPackagePublisherVercel(),
-    AppPackagePublisherVivo()
+    AppPackagePublisherVivo(),
+    AppPackagePublisherOppo(),
   ];
 
   Future<PublishResult> publish(

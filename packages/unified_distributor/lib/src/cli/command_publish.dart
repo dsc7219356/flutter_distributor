@@ -32,7 +32,8 @@ class CommandPublish extends Command {
         'qiniu',
         'vercel',
         'honor',
-        'vivo'
+        'vivo',
+        'oppo'
       ].join(','),
       help: 'The target provider(s) to publish to.',
     );
