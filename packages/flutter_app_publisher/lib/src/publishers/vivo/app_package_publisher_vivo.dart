@@ -30,7 +30,7 @@ class AppPackagePublisherVivo extends AppPackagePublisher {
       environment,
       publishArguments,
     );
-    String fileMd5 = '13695fa112b009ae2ce286b630440f97';
+    String fileMd5 = await generateMd5(file);
     Map<String, dynamic> uploadResult = await uploadFile(
       publishConfig,
       file,
@@ -195,5 +195,11 @@ class AppPackagePublisherVivo extends AppPackagePublisher {
   ) {
     String sign = hmacSHA256(getUrlParamsFromMap(params), accessSecret);
     return sign;
+  }
+
+ static Future<String> generateMd5(File file) async{
+    List<int> fileBytes = await file.readAsBytes();
+    var digest = md5.convert(fileBytes);
+    return digest.toString(); // 返回十六进制字符串
   }
 }
