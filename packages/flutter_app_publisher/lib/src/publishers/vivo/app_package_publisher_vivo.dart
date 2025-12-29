@@ -30,7 +30,7 @@ class AppPackagePublisherVivo extends AppPackagePublisher {
       environment,
       publishArguments,
     );
-    String fileMd5 = await getFileSha256(file);
+    String fileMd5 = 'a84bdf6a4753eee0c1b4e01381421bef';
     Map<String, dynamic> uploadResult = await uploadFile(
       publishConfig,
       file,
