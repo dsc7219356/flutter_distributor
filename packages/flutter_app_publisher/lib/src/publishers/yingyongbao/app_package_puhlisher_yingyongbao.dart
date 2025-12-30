@@ -87,6 +87,8 @@ class AppPackagePublisherYingyongbao extends AppPackagePublisher {
       data: Stream.fromIterable([fileContent]),
       options: Options(
         contentType: 'application/octet-stream',
+        sendTimeout: Duration(minutes:30),
+        receiveTimeout: Duration(minutes:30),
       ),
       onSendProgress: (int count, int total) {
         onPublishProgress?.call(count, total);
