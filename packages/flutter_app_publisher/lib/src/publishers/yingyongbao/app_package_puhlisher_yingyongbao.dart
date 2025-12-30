@@ -76,7 +76,7 @@ class AppPackagePublisherYingyongbao extends AppPackagePublisher {
     List<int> fileContent = apkFile.readAsBytesSync();
     print(uploadInfo['pre_sign_url']);
     try{
-      Response response = await _dio.put(
+      Response response = await _dio.post(
         uploadInfo['pre_sign_url'],
         data: Stream.fromIterable([fileContent]),
         options: Options(
