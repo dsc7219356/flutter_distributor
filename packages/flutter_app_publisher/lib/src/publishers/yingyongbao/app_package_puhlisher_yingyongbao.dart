@@ -80,9 +80,12 @@ class AppPackagePublisherYingyongbao extends AppPackagePublisher {
         uploadInfo['pre_sign_url'],
         data: Stream.fromIterable([fileContent]),
         options: Options(
-          contentType: 'application/octet-stream',
+        //  contentType: 'application/octet-stream',
           sendTimeout: Duration(minutes:60),
           receiveTimeout: Duration(minutes:60),
+            headers: {
+              'Content-Type': 'application/octet-stream'
+            }
         ),
         onSendProgress: (int count, int total) {
           onPublishProgress?.call(count, total);
