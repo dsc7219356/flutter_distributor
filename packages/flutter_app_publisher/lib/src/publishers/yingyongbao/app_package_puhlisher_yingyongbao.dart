@@ -73,33 +73,28 @@ class AppPackagePublisherYingyongbao extends AppPackagePublisher {
   }
 
   Future<Map<String,dynamic>>uploadApk(Map<String,dynamic >uploadInfo,String userid,String timestamp,File apkFile,String accessSecret,PublishProgressCallback? onPublishProgress,) async{
-    // Map<String, dynamic> data = {
-    //   'user_id':userid,
-    //   'timestamp': timestamp,
-    // };
-    // String appsign = getSign(data, accessSecret);
-    // data.addAll({
-    //   'sign':appsign
-    // });
     List<int> fileContent = await apkFile.readAsBytes();
-    Response response = await _dio.put(
-      uploadInfo['pre_sign_url'],
-      data: Stream.fromIterable([fileContent]),
-      options: Options(
-        contentType: 'application/octet-stream',
-        sendTimeout: Duration(minutes:60),
-        receiveTimeout: Duration(minutes:60),
-      ),
-      onSendProgress: (int count, int total) {
-        onPublishProgress?.call(count, total);
-      },
-    );
-    print(response.data);
-    if (response.statusCode == 200 ) {
-
-     return Map<String, dynamic>.from(response.data);
-    } else {
-      throw PublishError('upload error: ${response.data}');
+    try{
+      Response response = await _dio.put(
+        uploadInfo['pre_sign_url'],
+        data: Stream.fromIterable([fileContent]),
+        options: Options(
+          contentType: 'application/octet-stream',
+          sendTimeout: Duration(minutes:60),
+          receiveTimeout: Duration(minutes:60),
+        ),
+        onSendProgress: (int count, int total) {
+          onPublishProgress?.call(count, total);
+        },
+      );
+      print(response.data);
+      if (response.statusCode == 200 ) {
+        return Map<String, dynamic>.from(response.data);
+      } else {
+        throw PublishError('upload error: ${response.data}');
+      }
+    }catch(e){
+      throw PublishError(e.toString());
     }
   }
 
