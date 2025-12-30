@@ -61,6 +61,7 @@ class AppPackagePublisherYingyongbao extends AppPackagePublisher {
           contentType: 'application/x-www-form-urlencoded',
         ),
       );
+      print(response.data);
       if (response.data?['ret'] == 0) {
         return Map<String, dynamic>.from(response.data);
       } else {
@@ -80,9 +81,10 @@ class AppPackagePublisherYingyongbao extends AppPackagePublisher {
     data.addAll({
       'sign':appsign
     });
+    List<int> fileContent = await apkFile.readAsBytes();
     Response response = await _dio.put(
       uploadInfo['pre_sign_url'],
-      data: apkFile.openRead(),
+      data: Stream.fromIterable([fileContent]),
       options: Options(
         contentType: 'application/octet-stream',
       ),
@@ -90,7 +92,9 @@ class AppPackagePublisherYingyongbao extends AppPackagePublisher {
         onPublishProgress?.call(count, total);
       },
     );
+    print(response.data);
     if (response.statusCode == 200 ) {
+
      return Map<String, dynamic>.from(response.data);
     } else {
       throw PublishError('upload error: ${response.data}');
