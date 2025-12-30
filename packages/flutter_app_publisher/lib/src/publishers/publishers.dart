@@ -13,3 +13,4 @@ export 'xiaomi/app_package_puhlisher_xiaomi.dart';
 export 'honor/app_package_publisher_honor.dart';
 export 'vivo/app_package_publisher_vivo.dart';
 export 'oppo/app_package_puhlisher_oppo.dart';
+export 'yingyongbao/app_package_puhlisher_yingyongbao.dart';

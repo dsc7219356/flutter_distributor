@@ -20,6 +20,7 @@ class FlutterAppPublisher {
     AppPackagePublisherVercel(),
     AppPackagePublisherVivo(),
     AppPackagePublisherOppo(),
+    AppPackagePublisherYingyongbao(),
   ];
 
   Future<PublishResult> publish(
