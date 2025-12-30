@@ -74,6 +74,7 @@ class AppPackagePublisherYingyongbao extends AppPackagePublisher {
 
   Future<Map<String,dynamic>>uploadApk(Map<String,dynamic >uploadInfo,String userid,String timestamp,File apkFile,String accessSecret,PublishProgressCallback? onPublishProgress,) async{
     List<int> fileContent = await apkFile.readAsBytes();
+    print(uploadInfo['pre_sign_url']);
     try{
       Response response = await _dio.put(
         uploadInfo['pre_sign_url'],
