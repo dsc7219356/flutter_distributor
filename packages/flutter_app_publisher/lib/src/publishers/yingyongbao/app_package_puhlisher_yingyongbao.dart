@@ -34,7 +34,13 @@ class AppPackagePublisherYingyongbao extends AppPackagePublisher {
     String fileName = file.uri.pathSegments.last;
     Map<String,dynamic> uploadInfo = await getUploadUrl(publishConfig.userId, publishConfig.clientSecret, timestamp, fileName);
     bool upload = await uploadApk(uploadInfo,publishConfig.userId,timestamp,file,publishConfig.clientSecret,onPublishProgress);
-    await updateAppInfo(uploadInfo,publishConfig.userId,timestamp,publishConfig.clientSecret,file);
+    if(upload){
+      Map<String,dynamic> updateInfo = await updateAppInfo(uploadInfo,publishConfig.userId,timestamp,publishConfig.clientSecret,file);
+      if(updateInfo['ret'] == 0){
+        await queryAppUpdateStatus();
+      }
+    }
+
     return PublishResult(
       url:
       'https://app.open.qq.com/p/basic/distribution/update/edit?appId=1105472527',
@@ -91,6 +97,7 @@ class AppPackagePublisherYingyongbao extends AppPackagePublisher {
         },
       );
       if (response.statusCode == 200 ) {
+        print('上传成功，提审中。。。');
         return true;
       } else {
         return false;
@@ -127,7 +134,46 @@ class AppPackagePublisherYingyongbao extends AppPackagePublisher {
         print(response.data);
         return Map<String, dynamic>.from(response.data);
       } else {
-        throw PublishError('getUploadUrl error: ${response.data}');
+        throw PublishError('update error: ${response.data}');
+      }
+    } catch (e) {
+      throw PublishError(e.toString());
+    }
+  }
+
+  Future<Map<String, dynamic>>queryAppUpdateStatus(String userid,String timestamp,String accessSecret,)async{
+    Map<String, dynamic> query = {
+      'user_id':userid,
+      'timestamp': timestamp,
+      'pkg_name': 'cn.sigo',
+      'app_id':'1105472527',
+    };
+    String appsign = getSign(query, accessSecret);
+    query.addAll({
+      'sign':appsign
+    });
+    try {
+      Response response = await _dio.post(
+        'https://p.open.qq.com/open_file/developer_api/query_app_update_status',
+        data: query,
+        options: Options(
+          contentType: 'application/x-www-form-urlencoded',
+        ),
+      );
+      if (response.data?['ret'] == 0) {
+        int auditStatus = response.data?['audit_status'];
+        if(auditStatus==1){
+          print('审核中。。。');
+        } else if(auditStatus==2){
+          print('审核驳回');
+        } else if(auditStatus==3){
+          print('审核通过');
+        }else if(auditStatus==8){
+          print('开发者主动撤销');
+        }
+        return Map<String, dynamic>.from(response.data);
+      } else {
+        throw PublishError('update error: ${response.data}');
       }
     } catch (e) {
       throw PublishError(e.toString());
