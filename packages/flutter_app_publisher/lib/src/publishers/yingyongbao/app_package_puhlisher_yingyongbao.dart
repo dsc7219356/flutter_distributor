@@ -74,8 +74,7 @@ class AppPackagePublisherYingyongbao extends AppPackagePublisher {
 
   Future<Map<String,dynamic>>uploadApk(Map<String,dynamic >uploadInfo,String userid,String timestamp,File apkFile,String accessSecret,PublishProgressCallback? onPublishProgress,) async{
     List<int> fileContent = apkFile.readAsBytesSync();
-    // print(uploadInfo['pre_sign_url']);
-    try{
+   // try{
       Response response = await _dio.put(
         uploadInfo['pre_sign_url'],
         data: apkFile.openRead(),
@@ -97,9 +96,10 @@ class AppPackagePublisherYingyongbao extends AppPackagePublisher {
       } else {
         throw PublishError('upload error: ${response.data}');
       }
-    }catch(e){
-      throw PublishError(e.toString());
     }
+    // catch(e){
+    //   throw PublishError(e.toString());
+    // }
   }
 
   String hmacSHA256(String data, String key) {
