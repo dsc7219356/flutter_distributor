@@ -74,18 +74,18 @@ class AppPackagePublisherYingyongbao extends AppPackagePublisher {
 
   Future<Map<String,dynamic>>uploadApk(Map<String,dynamic >uploadInfo,String userid,String timestamp,File apkFile,String accessSecret,PublishProgressCallback? onPublishProgress,) async{
     List<int> fileContent = apkFile.readAsBytesSync();
-    print(uploadInfo['pre_sign_url']);
+    // print(uploadInfo['pre_sign_url']);
     try{
       Response response = await _dio.put(
         uploadInfo['pre_sign_url'],
-        data: Stream.fromIterable([fileContent]),
+        data: apkFile.openRead(),
         options: Options(
-        //  contentType: 'application/octet-stream',
+            contentType: 'application/octet-stream',
+            headers: {
+              Headers.contentLengthHeader: fileContent.length, // 设置 content-length.
+            },
           sendTimeout: Duration(minutes:60),
           receiveTimeout: Duration(minutes:60),
-            headers: {
-              'Content-Type': 'application/octet-stream'
-            }
         ),
         onSendProgress: (int count, int total) {
           onPublishProgress?.call(count, total);
