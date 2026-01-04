@@ -96,7 +96,7 @@ class AppPackagePublisherYingyongbao extends AppPackagePublisher {
       } else {
         throw PublishError('upload error: ${response.data}');
       }
-    }
+   // }
     // catch(e){
     //   throw PublishError(e.toString());
     // }
