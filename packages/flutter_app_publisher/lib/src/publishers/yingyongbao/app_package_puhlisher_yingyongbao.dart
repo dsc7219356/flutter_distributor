@@ -37,7 +37,7 @@ class AppPackagePublisherYingyongbao extends AppPackagePublisher {
     if(upload){
       Map<String,dynamic> updateInfo = await updateAppInfo(uploadInfo,publishConfig.userId,timestamp,publishConfig.clientSecret,file);
       if(updateInfo['ret'] == 0){
-        await queryAppUpdateStatus();
+        await queryAppUpdateStatus(publishConfig.userId,timestamp,publishConfig.clientSecret);
       }
     }
 
