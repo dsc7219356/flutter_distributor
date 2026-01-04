@@ -91,11 +91,12 @@ class AppPackagePublisherYingyongbao extends AppPackagePublisher {
         },
       );
       print(response.data);
-      if (response.statusCode == 200 ) {
-        return Map<String, dynamic>.from(response.data);
-      } else {
-        throw PublishError('upload error: ${response.data}');
-      }
+      return {};
+      // if (response.statusCode == 200 ) {
+      //   return Map<String, dynamic>.from(response.data);
+      // } else {
+      //   throw PublishError('upload error: ${response.data}');
+      // }
    // }
     // catch(e){
     //   throw PublishError(e.toString());
