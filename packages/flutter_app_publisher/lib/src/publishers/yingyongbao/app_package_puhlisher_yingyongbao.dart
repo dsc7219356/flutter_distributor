@@ -33,8 +33,9 @@ class AppPackagePublisherYingyongbao extends AppPackagePublisher {
     String timestamp = (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString();
     String fileName = file.uri.pathSegments.last;
     Map<String,dynamic> uploadInfo = await getUploadUrl(publishConfig.userId, publishConfig.clientSecret, timestamp, fileName);
-    Map<String,dynamic> upload = await uploadApk(uploadInfo,publishConfig.userId,timestamp,file,publishConfig.clientSecret,onPublishProgress);
-    print(upload);
+    bool upload = await uploadApk(uploadInfo,publishConfig.userId,timestamp,file,publishConfig.clientSecret,onPublishProgress);
+
+    await updateAppInfo(uploadInfo,publishConfig.userId,timestamp,publishConfig.clientSecret,file);
     return PublishResult(
       url:
       'https://app.open.qq.com/p/basic/distribution/update/edit?appId=1105472527',
@@ -62,7 +63,6 @@ class AppPackagePublisherYingyongbao extends AppPackagePublisher {
           contentType: 'application/x-www-form-urlencoded',
         ),
       );
-      print(response.data);
       if (response.data?['ret'] == 0) {
         return Map<String, dynamic>.from(response.data);
       } else {
@@ -73,9 +73,9 @@ class AppPackagePublisherYingyongbao extends AppPackagePublisher {
     }
   }
 
-  Future<Map<String,dynamic>>uploadApk(Map<String,dynamic >uploadInfo,String userid,String timestamp,File apkFile,String accessSecret,PublishProgressCallback? onPublishProgress,) async{
+  Future<bool>uploadApk(Map<String,dynamic >uploadInfo,String userid,String timestamp,File apkFile,String accessSecret,PublishProgressCallback? onPublishProgress,) async{
     List<int> fileContent = apkFile.readAsBytesSync();
-   // try{
+    try{
       Response response = await _dio.put(
         uploadInfo['pre_sign_url'],
         data: apkFile.openRead(),
@@ -91,29 +91,48 @@ class AppPackagePublisherYingyongbao extends AppPackagePublisher {
           onPublishProgress?.call(count, total);
         },
       );
-      print(response.data);
       if (response.statusCode == 200 ) {
-        if (response.data is String) {
-          print(response.data+'dsdfsf');
-          var jsonData = json.decode(response.data);
-          return Map<String, dynamic>.from(jsonData);
-        } else if (response.data is Map) {
-          return Map<String, dynamic>.from(response.data);
-        } else {
-          return {};
-        }
+        return true;
       } else {
-        return {};
+        return false;
       }
-
-   // }
-    // catch(e){
-    //   throw PublishError(e.toString());
-    // }
+    } catch (e) {
+      throw PublishError(e.toString());
+    }
   }
 
-  Future<void>updateAppInfo()async{
-
+  Future<Map<String, dynamic>>updateAppInfo(Map<String,dynamic >uploadInfo,String userid,String timestamp,String accessSecret,File file)async{
+    Map<String, dynamic> query = {
+      'user_id':userid,
+      'timestamp': timestamp,
+      'pkg_name': 'cn.sigo',
+      'app_id':'1105472527',
+      'deploy_type':1,
+      'apk32_flag':1,
+      'apk32_file_serial_number':uploadInfo['serial_number'],
+      'apk32_file_md5': await generateMd5(file)
+    };
+    String appsign = getSign(query, accessSecret);
+    query.addAll({
+      'sign':appsign
+    });
+    try {
+      Response response = await _dio.post(
+        'https://p.open.qq.com/open_file/developer_api/update_app',
+        data: query,
+        options: Options(
+          contentType: 'application/x-www-form-urlencoded',
+        ),
+      );
+      if (response.data?['ret'] == 0) {
+        print(response.data);
+        return Map<String, dynamic>.from(response.data);
+      } else {
+        throw PublishError('getUploadUrl error: ${response.data}');
+      }
+    } catch (e) {
+      throw PublishError(e.toString());
+    }
   }
 
   String hmacSHA256(String data, String key) {
@@ -145,5 +164,11 @@ class AppPackagePublisherYingyongbao extends AppPackagePublisher {
       ) {
     String sign = hmacSHA256(getUrlParamsFromMap(params), accessSecret);
     return sign;
+  }
+
+  static Future<String> generateMd5(File file) async{
+    List<int> fileBytes = await file.readAsBytes();
+    var digest = md5.convert(fileBytes);
+    return digest.toString(); // 返回十六进制字符串
   }
 }
