@@ -34,7 +34,6 @@ class AppPackagePublisherYingyongbao extends AppPackagePublisher {
     String fileName = file.uri.pathSegments.last;
     Map<String,dynamic> uploadInfo = await getUploadUrl(publishConfig.userId, publishConfig.clientSecret, timestamp, fileName);
     bool upload = await uploadApk(uploadInfo,publishConfig.userId,timestamp,file,publishConfig.clientSecret,onPublishProgress);
-
     await updateAppInfo(uploadInfo,publishConfig.userId,timestamp,publishConfig.clientSecret,file);
     return PublishResult(
       url:
