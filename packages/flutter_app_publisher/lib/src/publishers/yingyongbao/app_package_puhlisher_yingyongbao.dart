@@ -94,8 +94,8 @@ class AppPackagePublisherYingyongbao extends AppPackagePublisher {
       print(response.data);
       if (response.statusCode == 200 ) {
         if (response.data is String) {
+          print(response.data);
           var jsonData = json.decode(response.data);
-          print(jsonData);
           return Map<String, dynamic>.from(jsonData);
         } else if (response.data is Map) {
           return Map<String, dynamic>.from(response.data);
