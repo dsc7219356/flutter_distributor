@@ -94,7 +94,7 @@ class AppPackagePublisherYingyongbao extends AppPackagePublisher {
       print(response.data);
       if (response.statusCode == 200 ) {
         if (response.data is String) {
-          print(response.data);
+          print(response.data+'dsdfsf');
           var jsonData = json.decode(response.data);
           return Map<String, dynamic>.from(jsonData);
         } else if (response.data is Map) {
@@ -110,6 +110,10 @@ class AppPackagePublisherYingyongbao extends AppPackagePublisher {
     // catch(e){
     //   throw PublishError(e.toString());
     // }
+  }
+
+  Future<void>updateAppInfo()async{
+
   }
 
   String hmacSHA256(String data, String key) {
