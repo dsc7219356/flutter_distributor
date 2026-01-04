@@ -33,7 +33,8 @@ class AppPackagePublisherYingyongbao extends AppPackagePublisher {
     String timestamp = (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString();
     String fileName = file.uri.pathSegments.last;
     Map<String,dynamic> uploadInfo = await getUploadUrl(publishConfig.userId, publishConfig.clientSecret, timestamp, fileName);
-   await uploadApk(uploadInfo,publishConfig.userId,timestamp,file,publishConfig.clientSecret,onPublishProgress);
+    Map<String,dynamic> upload = await uploadApk(uploadInfo,publishConfig.userId,timestamp,file,publishConfig.clientSecret,onPublishProgress);
+    print(upload);
     return PublishResult(
       url:
       'https://app.open.qq.com/p/basic/distribution/update/edit?appId=1105472527',
@@ -91,12 +92,24 @@ class AppPackagePublisherYingyongbao extends AppPackagePublisher {
         },
       );
       print(response.data);
-      return {};
-      // if (response.statusCode == 200 ) {
-      //   return Map<String, dynamic>.from(response.data);
-      // } else {
-      //   throw PublishError('upload error: ${response.data}');
-      // }
+      if (response.statusCode == 200 ) {
+        if (response.data is String) {
+          try {
+            var jsonData = json.decode(response.data);
+            return Map<String, dynamic>.from(jsonData);
+          } catch (e) {
+            // 如果不是 JSON 格式，返回成功标志
+            return Map<String, dynamic>.from(response.data);
+          }
+        } else if (response.data is Map) {
+          return Map<String, dynamic>.from(response.data);
+        } else {
+          return {};
+        }
+      } else {
+        return {};
+      }
+
    // }
     // catch(e){
     //   throw PublishError(e.toString());
