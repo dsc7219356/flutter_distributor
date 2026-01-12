@@ -30,7 +30,7 @@ class AppPackagePublisherOppo extends AppPackagePublisher {
     );
 
     String accessToken = await getAccessToken(publishConfig.clientId, publishConfig.clientSecret);
-    String timestamp = (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString();
+    String timestamp = (DateTime.now().millisecondsSinceEpoch).toString();
     Map<String, dynamic> data = await getUploadUrl(accessToken, publishConfig.clientSecret, timestamp);
     Map<String, dynamic> uploadInfo =
         await uploadFile(accessToken, timestamp, data, publishConfig.clientSecret, file, onPublishProgress);
