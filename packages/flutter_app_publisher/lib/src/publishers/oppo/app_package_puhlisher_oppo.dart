@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_app_publisher/flutter_app_publisher.dart';
 import 'package:flutter_app_publisher/src/publishers/oppo/publish_oppo_config.dart';
 import 'package:parse_app_package/parse_app_package.dart';
-
+// https://open.oppomobile.com/documentation/page/info?id=13437
 class AppPackagePublisherOppo extends AppPackagePublisher {
   final Dio _dio = Dio();
 
@@ -41,13 +42,21 @@ class AppPackagePublisherOppo extends AppPackagePublisher {
 
   Future<String> getAccessToken(String clientId, String clientSecret) async {
     try {
+      // Response response = await _dio.get(
+      //   'https://openapi.heytapmobi.com/developer/v1/token?client_id=${clientId}&client_secret=${clientSecret}',
+      //   options: Options(
+      //     contentType: 'application/x-www-form-urlencoded',
+      //     responseType: ResponseType.json,
+      //   ),
+      // );
       Response response = await _dio.get(
-        'https://oop-openapi-cn.heytapmobi.com/developer/v1/token?client_id=${clientId}&client_secret=${clientSecret}',
+        'https://openapi.heytapmobi.com/oauth2/v1/token?client_id=${clientId}&client_secret=${clientSecret}&grant_type=client_credentials',
         options: Options(
           contentType: 'application/x-www-form-urlencoded',
           responseType: ResponseType.json,
         ),
       );
+      print(response.data);
       if (response.statusCode == 200 && response.data['data']['access_token'] != null) {
         return response.data['data']['access_token'];
       } else {
@@ -66,12 +75,27 @@ class AppPackagePublisherOppo extends AppPackagePublisher {
     String appsign = getSign(query, accessSecret);
 
     try {
-      Response response = await _dio.get(
-        'https://oop-openapi-cn.heytapmobi.com/resource/v1/upload/get-upload-url?access_token=${accessToken}&timestamp=${timestamp}&api_sign=${appsign}',
+      // Response response = await _dio.get(
+      //   'https://openapi.heytapmobi.com/resource/v1/upload/get-upload-url?access_token=${accessToken}&timestamp=${timestamp}&api_sign=${appsign}',
+      //   options: Options(
+      //     contentType: 'application/x-www-form-urlencoded',
+      //   ),
+      // );
+      Response response = await _dio.post(
+        'https://openapi.heytapmobi.com/gameinstaller/get-upload-url',
         options: Options(
           contentType: 'application/x-www-form-urlencoded',
+          headers: {
+            'Authorization': accessToken,
+            'X-Client-Send-Utc-Ms':timestamp,
+            'X-Nonce': Random().nextInt(20001).toString(),
+            'X-Api-Sign':appsign,
+            'X-Api-Sign-Type':'sort',
+            'Content-Type': 'application/json',
+          },
         ),
       );
+      print(response.data);
       if (response.data?['errno'] == 0) {
         return Map<String, dynamic>.from(response.data['data']);
       } else {
