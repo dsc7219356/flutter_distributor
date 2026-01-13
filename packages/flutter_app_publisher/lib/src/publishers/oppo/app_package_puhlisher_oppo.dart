@@ -32,9 +32,9 @@ class AppPackagePublisherOppo extends AppPackagePublisher {
     String accessToken = await getAccessToken(publishConfig.clientId, publishConfig.clientSecret);
     String timestamp = (DateTime.now().millisecondsSinceEpoch).toString();
     Map<String, dynamic> data = await getUploadUrl(accessToken, publishConfig.clientSecret, timestamp);
-    Map<String, dynamic> uploadInfo =
-        await uploadFile(accessToken, timestamp, data, publishConfig.clientSecret, file, onPublishProgress);
-    await updateApp(accessToken, timestamp, publishConfig.clientSecret, file, uploadInfo);
+    // Map<String, dynamic> uploadInfo =
+    //     await uploadFile(accessToken, timestamp, data, publishConfig.clientSecret, file, onPublishProgress);
+    // await updateApp(accessToken, timestamp, publishConfig.clientSecret, file, uploadInfo);
     return PublishResult(
       url: 'https://open.oppomobile.com/new/mcom/app/detail?app_id=3497867&pkg_symbol=0',
     );
@@ -72,8 +72,9 @@ class AppPackagePublisherOppo extends AppPackagePublisher {
       'access_token': accessToken,
       'timestamp': timestamp,
     };
-    String appsign = getSign(query, accessSecret);
-
+   String nonce=   Random().nextInt(20001).toString();
+    // String appsign = getSign(query, accessSecret);
+   String appsign = sign(accessToken, timestamp, nonce, accessSecret, {});
     try {
       // Response response = await _dio.get(
       //   'https://openapi.heytapmobi.com/resource/v1/upload/get-upload-url?access_token=${accessToken}&timestamp=${timestamp}&api_sign=${appsign}',
@@ -88,10 +89,9 @@ class AppPackagePublisherOppo extends AppPackagePublisher {
           headers: {
             'Authorization': accessToken,
             'X-Client-Send-Utc-Ms':timestamp,
-            'X-Nonce': Random().nextInt(20001).toString(),
+            'X-Nonce': nonce,
             'X-Api-Sign':appsign,
             'X-Api-Sign-Type':'sort',
-            'Content-Type': 'application/json',
           },
         ),
       );
@@ -224,5 +224,26 @@ class AppPackagePublisherOppo extends AppPackagePublisher {
     List<int> fileBytes = await file.readAsBytes();
     var digest = md5.convert(fileBytes);
     return digest.toString(); // 返回十六进制字符串
+  }
+
+
+  String sign(String accessToken, String timestamp, String nonce, String secret, Map<String, Object> paramsMap) {
+    List<String> keysList = paramsMap.keys.toList()..sort();
+    List<String> paramList = [];
+    for (String key in keysList) {
+      Object? object = paramsMap[key];
+      if (object == null) {
+        continue;
+      }
+      String value = key + "=" + object.toString();
+      paramList.add(value);
+    }
+    String s = "access_token=" + accessToken + "&timestamp=" + timestamp + "&nonce=" + nonce;
+    if (paramList.isNotEmpty) {
+      // 如果字段值为数组或者Map，需要转换成json字符串进行拼接
+      String signStr = paramList.join("&");
+      s = s + "&" + signStr;
+    }
+    return hmacSHA256(s, secret);
   }
 }
