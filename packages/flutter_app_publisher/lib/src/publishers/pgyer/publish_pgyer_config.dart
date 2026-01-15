@@ -37,6 +37,7 @@ class PublishPgyerConfig extends PublishConfig {
       Map<String, String>? environment,
       Map<String, dynamic>? publishArguments,
       ) {
+    print('publishArguments:${publishArguments}');
     String? apiKey = (environment ?? Platform.environment)[kEnvPgyerApiKey];
     if ((apiKey ?? '').isEmpty) {
       throw PublishError('Missing `$kEnvPgyerApiKey` environment variable.');
