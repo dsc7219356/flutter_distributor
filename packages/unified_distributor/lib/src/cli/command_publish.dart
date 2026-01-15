@@ -206,6 +206,11 @@ class CommandPublish extends Command {
       help: 'Version update description (optional)',
     );
     argParser.addOption(
+      'pgyer-env',
+      valueHelp: '',
+      help: 'Application description (optional)',
+    );
+    argParser.addOption(
       'pgyer-install-date',
       valueHelp: '1|2',
       help: 'Installation validity: 1=set time, 2=permanent (optional)',
