@@ -237,7 +237,7 @@ class UnifiedDistributor {
         );
 
         Map<String, dynamic>? newPublishArguments = {};
-
+        print('publishArguments:${publishArguments}');
         if (publishArguments != null) {
           for (var key in publishArguments.keys) {
             // Keep app- prefixed arguments
@@ -272,7 +272,7 @@ class UnifiedDistributor {
         if (newPublishArguments.keys.isEmpty) {
           newPublishArguments = publishArguments;
         }
-
+        print('newPublishArguments:${newPublishArguments}');
         PublishResult publishResult = await _publisher.publish(
           fileSystemEntity,
           target: target,
