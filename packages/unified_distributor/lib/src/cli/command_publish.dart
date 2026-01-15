@@ -201,11 +201,6 @@ class CommandPublish extends Command {
       help: 'Application description (optional)',
     );
     argParser.addOption(
-      'pgyer-update-description',
-      valueHelp: '',
-      help: 'Version update description (optional)',
-    );
-    argParser.addOption(
       'pgyer-env',
       valueHelp: '',
       help: 'Application description (optional)',
