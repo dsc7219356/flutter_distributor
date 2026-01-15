@@ -44,14 +44,17 @@ class PublishPgyerConfig extends PublishConfig {
     }
     String updatedescription = (environment ?? Platform.environment)[kPGYER_UPDATE_DESCRIPTION_DETAIL]??'';
     print('publishArguments:${publishArguments}');
+    String appEnv = _parseString(publishArguments?['update-description'])??'';
+    print('appEnv:${appEnv}');
+    String buildUpdateDescription = appEnv + updatedescription;
+    print('buildUpdateDescription:${buildUpdateDescription}');
     return PublishPgyerConfig(
       apiKey: apiKey!,
       oversea: _parseInt(publishArguments?['oversea']),
       buildInstallType: _parseInt(publishArguments?['install-type']),
       buildPassword: _parseString(publishArguments?['password']),
       buildDescription: _parseString(publishArguments?['description']),
-      buildUpdateDescription:
-      _parseString(publishArguments?['update-description'])??'' + updatedescription,
+      buildUpdateDescription: buildUpdateDescription,
       buildInstallDate: _parseInt(publishArguments?['install-date']),
       buildInstallStartDate:
       _parseString(publishArguments?['install-start-date']),
