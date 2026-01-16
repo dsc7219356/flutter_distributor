@@ -222,8 +222,8 @@ class AppPackagePublisherAppGallery extends AppPackagePublisher {
     };
     // try {
       Response response = await _dio.post(
-        'https://connect-api.cloud.huawei.com/api/publish/v2/app-submit',
-        data: query,
+        'https://connect-api.cloud.huawei.com/api/publish/v2/app-submit?appid=${appId}',
+        //data: query,
         options: Options(headers: headers),
       );
       if (response.statusCode == 200 && response.data['ret']['code'] == 0) {
