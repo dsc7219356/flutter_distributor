@@ -62,6 +62,15 @@ class AppPackagePublisherAppGallery extends AppPackagePublisher {
         uploadUrlInfo['objectId'],
       );
 
+      print('华为应用市场要求2分钟后再调发布接口，我先等一分钟试试...');
+      await Future.delayed(Duration(minutes: 1));
+      print('一分钟结束，我来试试发布');
+      await publishAppStore(
+        publishConfig.clientId,
+        accessToken,
+        publishConfig.appId,
+      );
+
       return PublishResult(
         url:
             'https://developer.huawei.com/consumer/cn/service/josp/agc/index.html#/myApp/10778152/v1847767732263617280',
@@ -197,6 +206,36 @@ class AppPackagePublisherAppGallery extends AppPackagePublisher {
       throw PublishError('applyUpload error: ${e.toString()}');
     }
   }
+
+  Future<Map<String, dynamic>> publishAppStore(
+      String clientId,
+      String accessToken,
+      String appId,
+      ) async{
+    Map<String, dynamic> headers = {
+      'client_id': clientId,
+      'Authorization': 'Bearer $accessToken',
+      'Content-Type': 'application/json',
+    };
+    Map<String, dynamic> query = {
+      'appId': appId,
+    };
+    try {
+      Response response = await _dio.post(
+        'https://connect-api.cloud.huawei.com/api/publish/v2/app-submit',
+        data: query,
+        options: Options(headers: headers),
+      );
+      if (response.statusCode == 200 && response.data['ret']['code'] == 0) {
+        return Map<String, dynamic>.from(response.data);
+      } else {
+        throw PublishError('applyUpload error: ${response.data}');
+      }
+    } catch (e) {
+      throw PublishError('applyUpload error: ${e.toString()}');
+    }
+  }
+
 
   // Future<Map<String, dynamic>> applyUpload(
   //   String clientId,
