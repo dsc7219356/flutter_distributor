@@ -220,7 +220,7 @@ class AppPackagePublisherAppGallery extends AppPackagePublisher {
     Map<String, dynamic> query = {
       'appId': appId,
     };
-    // try {
+    try {
       Response response = await _dio.post(
         'https://connect-api.cloud.huawei.com/api/publish/v2/app-submit?appid=${appId}',
         //data: query,
@@ -231,9 +231,9 @@ class AppPackagePublisherAppGallery extends AppPackagePublisher {
       } else {
         throw PublishError('applyUpload error: ${response.data}');
       }
-    // } catch (e) {
-    //   throw PublishError('applyUpload error: ${e.toString()}');
-    // }
+    } catch (e) {
+      throw PublishError('applyUpload error: ${e.toString()}');
+    }
   }
 
 
