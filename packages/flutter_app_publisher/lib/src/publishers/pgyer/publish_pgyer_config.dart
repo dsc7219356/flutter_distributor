@@ -43,8 +43,12 @@ class PublishPgyerConfig extends PublishConfig {
       throw PublishError('Missing `$kEnvPgyerApiKey` environment variable.');
     }
     String updatedescription = (environment ?? Platform.environment)[kPGYER_UPDATE_DESCRIPTION_DETAIL]??'';
+    print('参数是这些：${environment ?? Platform.environment}');
+    print('更新描述为：${updatedescription}');
     String appEnv = _parseString(publishArguments?['update-description'])??'';
+    print('环境为：${appEnv}');
     String buildUpdateDescription = appEnv + updatedescription;
+    print('合并后更新描述为：${buildUpdateDescription}');
     return PublishPgyerConfig(
       apiKey: apiKey!,
       oversea: _parseInt(publishArguments?['oversea']),
