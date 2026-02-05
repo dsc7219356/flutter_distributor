@@ -168,8 +168,6 @@ class AppPackagePublisherPgyer extends AppPackagePublisher {
     // 使用配置类解析参数
     final config = PublishPgyerConfig.parse(environment, publishArguments);
     print(
-        'config:\n${config.buildUpdateDescription}');
-    print(
         'config:\n${const JsonEncoder.withIndent('  ').convert(config.toJson())}');
 
     var tokenInfo = await getCOSToken(config, file.path);
