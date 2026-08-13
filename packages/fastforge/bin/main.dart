@@ -1,11 +1,19 @@
+import 'dart:io';
+
 import 'package:unified_distributor/unified_distributor.dart';
 
 Future<void> main(List<String> args) async {
-  final cli = UnifiedDistributorCommandLineInterface(
-    'fastforge',
-    'Package and publish your apps with ease.',
-    packageName: 'fastforge',
-    displayName: 'Fastforge',
-  );
-  return await cli.run(args);
+  try {
+    final cli = UnifiedDistributorCommandLineInterface(
+      'fastforge',
+      'Package and publish your apps with ease.',
+      packageName: 'fastforge',
+      displayName: 'Fastforge',
+    );
+    await cli.run(args);
+  } catch (error, stackTrace) {
+    stderr.writeln(error.toString());
+    stderr.writeln(stackTrace.toString());
+    exit(1);
+  }
 }

@@ -1,14 +1,14 @@
 name: parse_app_package
 description: Parse app package
-version: 0.4.5
-homepage: https://distributor.leanflutter.dev
-repository: https://github.com/leanflutter/flutter_distributor/tree/main/packages/parse_app_package
+version: 0.6.0
+homepage: https://fastforge.dev
+repository: https://github.com/fastforgedev/fastforge/tree/main/packages/parse_app_package
 
 environment:
   sdk: ">=2.16.0 <4.0.0"
 
 dependencies:
-  archive: 3.4.10
+  archive: ^3.6.1
   args: ^2.2.0
   plist_parser: ^0.0.11
   shell_executor:

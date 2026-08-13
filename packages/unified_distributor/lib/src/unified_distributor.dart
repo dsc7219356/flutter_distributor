@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:flutter_app_builder/flutter_app_builder.dart';
 import 'package:flutter_app_packager/flutter_app_packager.dart';
 import 'package:flutter_app_publisher/flutter_app_publisher.dart';
@@ -7,13 +8,15 @@ import 'package:path/path.dart' as p;
 import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:shell_executor/shell_executor.dart';
 import 'package:shell_uikit/shell_uikit.dart';
+import 'package:unified_distributor/src/check_version_result.dart';
+import 'package:unified_distributor/src/distribute_options.dart';
+import 'package:unified_distributor/src/extensions/string.dart';
 import 'package:unified_distributor/src/release.dart';
 import 'package:unified_distributor/src/release_job.dart';
+import 'package:unified_distributor/src/utils/default_shell_executor.dart';
+import 'package:unified_distributor/src/utils/logger.dart';
 import 'package:unified_distributor/src/utils/pub_dev_api.dart';
-
 import 'package:yaml/yaml.dart';
-
-import '../unified_distributor.dart';
 
 /// A class that provides a unified interface for distributing applications
 /// across different platforms.
@@ -141,7 +144,13 @@ class UnifiedDistributor {
     required bool cleanBeforeBuild,
     required Map<String, dynamic> buildArguments,
     Map<String, String>? variables,
+    Map<String, dynamic>? hooks,
   }) async {
+    // Pass environment variables (e.g. INNO_SETUP_PATH) to the packager via static setter
+    if (variables != null && variables.isNotEmpty) {
+      InnoSetupCompiler.setExtraEnv(variables);
+    }
+
     List<MakeResult> makeResultList = [];
 
     try {
@@ -191,6 +200,9 @@ class UnifiedDistributor {
             'channel': channel,
             'artifact_name': artifactName,
           };
+          if (hooks != null) {
+            arguments['hooks'] = hooks;
+          }
           MakeResult makeResult = await _packager.package(
             platform,
             target,
@@ -237,6 +249,7 @@ class UnifiedDistributor {
         );
 
         Map<String, dynamic>? newPublishArguments = {};
+
         if (publishArguments != null) {
           for (var key in publishArguments.keys) {
             // Keep app- prefixed arguments
@@ -271,6 +284,7 @@ class UnifiedDistributor {
         if (newPublishArguments.keys.isEmpty) {
           newPublishArguments = publishArguments;
         }
+
         PublishResult publishResult = await _publisher.publish(
           fileSystemEntity,
           target: target,
@@ -290,9 +304,13 @@ class UnifiedDistributor {
         );
         publishResultList.add(publishResult);
       }
-    } on Error catch (error) {
+    } catch (error, stackTrace) {
       logger.severe(error.toString().brightRed());
-      logger.severe(error.stackTrace.toString().brightRed());
+      if (error is Error) {
+        logger.severe(error.stackTrace.toString().brightRed());
+      } else {
+        logger.severe(stackTrace.toString().brightRed());
+      }
       rethrow;
     }
     return publishResultList;
@@ -366,6 +384,7 @@ class UnifiedDistributor {
             cleanBeforeBuild: needCleanBeforeBuild,
             buildArguments: job.package.buildArgs ?? {},
             variables: variables,
+            hooks: job.package.hooks,
           );
           // Clean only once
           needCleanBeforeBuild = false;

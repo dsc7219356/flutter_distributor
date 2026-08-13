@@ -1,8 +1,8 @@
 name: flutter_app_builder
 description: Build your Flutter app via Dart.
-version: 0.4.5
-homepage: https://distributor.leanflutter.dev
-repository: https://github.com/leanflutter/flutter_distributor/tree/main/packages/flutter_app_builder
+version: 0.6.1
+homepage: https://fastforge.dev
+repository: https://github.com/fastforgedev/fastforge/tree/main/packages/flutter_app_builder
 
 environment:
   sdk: ">=2.16.0 <4.0.0"
@@ -20,5 +20,4 @@ dependencies:
 
 dev_dependencies:
   dependency_validator: ^3.0.0
-#  mostly_reasonable_lints: ^0.1.2
   test: ^1.23.1

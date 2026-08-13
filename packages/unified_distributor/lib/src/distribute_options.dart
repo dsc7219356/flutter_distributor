@@ -2,8 +2,6 @@ import 'dart:io';
 
 import 'package:unified_distributor/src/release.dart';
 
-
-
 class DistributeOptions {
   DistributeOptions({
     required this.output,

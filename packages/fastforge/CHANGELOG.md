@@ -1,3 +1,47 @@
+## 0.6.12
+
+* bump `unified_distributor` to ^0.2.12
+* bump `flutter_app_packager` to ^0.6.11
+
+## 0.6.11
+
+* fix(flutter): use supported build version flags (#354)
+* bump `unified_distributor` to ^0.2.11
+
+## 0.6.10
+
+* fix(rpm): enforce usage of `appBinaryName` for assets and fix symlink logic (#313)
+* fix(rpm): rename `packagerEmail` to `packager_email` in JSON config deserialization (#352)
+* bump `unified_distributor` to ^0.2.10
+
+## 0.6.9
+
+* fix(msix): auto-detect architecture from build output directory (#349)
+* fix(linux-pacman): include 'opt/' directory in bsdtar archive (#346)
+* feat: add configurable EXE installer architectures
+* fix: desktop entry version key (#347)
+
+## 0.6.8
+
+* fix: ensure non-zero exit code on packaging/publishing errors (#344)
+* fix(macos): edit pkg PackageInfo in-place and handle productsign errors
+* fix(qiniu): clamp sent value within bounds to prevent progress bar overflow
+* fix: improved error handling to catch both Error and Exception types on publishing failures
+* bump `unified_distributor` to ^0.2.8
+* bump `qiniu_sdk_base` to ^0.8.0
+
+## 0.6.7
+
+* feat: add custom packager support (#326)
+* feat: add prepackage/postpackage hooks support (#342)
+* refactor: install Linux app files under `/opt` instead of `/usr/share` (#327)
+* feat(rpm): add support for RPM spec macros configuration
+* fix(appimage): skip running ldd on directories
+* feat: support custom Inno Setup installation path via `INNO_SETUP_PATH` env var
+* feat(Inno Setup): support extra environment variables and locale filtering
+* fix(macos): use `--component` flag for productbuild and add scripts support
+* bump `unified_distributor` to ^0.2.7
+
 ## 0.6.6
 
 * feat: add comprehensive pgyer upload parameters support #297
