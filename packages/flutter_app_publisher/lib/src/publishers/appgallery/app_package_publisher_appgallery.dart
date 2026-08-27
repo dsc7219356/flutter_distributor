@@ -56,14 +56,16 @@ class AppPackagePublisherAppGallery extends AppPackagePublisher {
       // Apply Package Info (4/4)
       // HarmonyOS packages (.hap/.app) use the v3 app-package-info API;
       // Android packages (.apk/.aab) use the v2 app-file-info API with fileType.
+      String? pkgId;
       if (isOhosPackage(fileName)) {
-        await applyUploadOhos(
+        final applyResult = await applyUploadOhos(
           publishConfig.clientId,
           accessToken,
           publishConfig.appId,
           fileName,
           uploadUrlInfo['objectId'],
         );
+        pkgId = _extractPkgId(applyResult);
       } else {
         await applyUploadAndroid(
           publishConfig.clientId,
@@ -74,9 +76,21 @@ class AppPackagePublisherAppGallery extends AppPackagePublisher {
         );
       }
 
-      print('华为应用市场要求2分钟后再调发布接口，我先等一分钟试试...');
-      await Future.delayed(Duration(minutes: 1));
-      print('一分钟结束，我来试试发布');
+      // 华为在 applyUpload 后异步编译软件包，编译未完成时 app-submit 会返回
+      // 204144719(编译中)。先轮询官方编译状态接口(package/compile/status)，
+      // 编译完成后再提交发布。
+      if (pkgId != null) {
+        await waitForCompileDone(
+          publishConfig.clientId,
+          accessToken,
+          publishConfig.appId,
+          pkgId,
+        );
+      } else {
+        print('未获取到 pkgId，等待 1 分钟后直接提交...');
+        await Future.delayed(Duration(minutes: 1));
+      }
+      print('编译完成，提交发布...');
       await publishAppStore(
         publishConfig.clientId,
         accessToken,
@@ -265,6 +279,101 @@ class AppPackagePublisherAppGallery extends AppPackagePublisher {
     } catch (e) {
       throw PublishError('applyUpload error: ${e.toString()}');
     }
+  }
+
+  /// 从 applyUploadOhos(v3 app-package-info) 的响应里提取软件包 ID(pkgId)。
+  /// 字段名未知时打印完整响应，便于定位真实字段。
+  String? _extractPkgId(Map<String, dynamic> data) {
+    print('applyUpload(app-package-info) 返回: $data');
+    for (final key in ['pkgId', 'pkgVersion', 'packageId', 'pkgIdList', 'pkgIds']) {
+      final v = data[key];
+      if (v is String && v.isNotEmpty) return v;
+      if (v is int) return v.toString();
+      if (v is List && v.isNotEmpty) {
+        final first = v.first;
+        if (first is String) return first;
+        if (first is Map) {
+          final id = first['pkgId'] ?? first['pkgVersion'] ?? first['id'];
+          if (id != null) return id.toString();
+        }
+      }
+      if (v is Map) {
+        final id = v['pkgId'] ?? v['pkgVersion'] ?? v['id'];
+        if (id != null) return id.toString();
+      }
+    }
+    return null;
+  }
+
+  /// 查询软件包编译状态。
+  /// GET /api/publish/v3/package/compile/status?appId=...&pkgIds=...
+  Future<Map<String, dynamic>> queryCompileStatus(
+      String clientId,
+      String accessToken,
+      String appId,
+      String pkgId,
+      ) async {
+    Map<String, dynamic> headers = {
+      'client_id': clientId,
+      'Authorization': 'Bearer $accessToken',
+      'Content-Type': 'application/json',
+    };
+    Map<String, dynamic> query = {
+      'appId': appId,
+      'pkgIds': pkgId,
+    };
+    try {
+      Response response = await _dio.get(
+        'https://connect-api.cloud.huawei.com/api/publish/v3/package/compile/status',
+        queryParameters: query,
+        options: Options(headers: headers),
+      );
+      if (response.statusCode == 200 && response.data['ret']?['code'] == 0) {
+        return Map<String, dynamic>.from(response.data);
+      }
+      throw PublishError('queryCompileStatus error: ${response.data}');
+    } catch (e) {
+      throw PublishError('queryCompileStatus error: ${e.toString()}');
+    }
+  }
+
+  /// 轮询软件包编译状态直到完成。
+  /// successStatus: 0=编译成功(完成), 1=编译中, 其余=编译失败。
+  Future<void> waitForCompileDone(
+      String clientId,
+      String accessToken,
+      String appId,
+      String pkgId,
+      ) async {
+    const int maxAttempts = 40; // 40 × 30s ≈ 20 分钟上限
+    const Duration interval = Duration(seconds: 30);
+    print('开始轮询软件包编译状态 (pkgId=$pkgId)...');
+    for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+      await Future.delayed(interval);
+      final Map<String, dynamic> result =
+          await queryCompileStatus(clientId, accessToken, appId, pkgId);
+      final list = result['pkgStateList'];
+      int? status;
+      if (list is List && list.isNotEmpty) {
+        final first = list.first;
+        if (first is Map) {
+          final raw = first['successStatus'];
+          status = raw is int ? raw : int.tryParse('$raw');
+        }
+      }
+      print('第 $attempt 次轮询: pkgStateList=$list, successStatus=$status');
+      if (status == 0) {
+        print('软件包编译完成。');
+        return;
+      } else if (status == 1) {
+        print('软件包编译中，继续等待...');
+        continue;
+      } else if (status != null) {
+        throw PublishError('软件包编译失败, successStatus=$status, 响应=$result');
+      }
+      // status 为 null（列表为空/字段缺失），继续轮询等待状态出现。
+    }
+    throw PublishError('软件包编译超时(${maxAttempts * 30}s)，请到 AGC 控制台查看。');
   }
 
   /// Submit the app for release / review.
