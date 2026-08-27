@@ -81,6 +81,7 @@ class AppPackagePublisherAppGallery extends AppPackagePublisher {
         publishConfig.clientId,
         accessToken,
         publishConfig.appId,
+        fileName,
       );
 
       return PublishResult(
@@ -266,32 +267,35 @@ class AppPackagePublisherAppGallery extends AppPackagePublisher {
     }
   }
 
+  /// Submit the app for release / review.
+  /// HarmonyOS (鸿蒙) uses the v3 app-submit endpoint; Android uses v2.
+  /// https://developer.huawei.com/consumer/cn/doc/app/agc-help-publish-api-app-submit-0000002271160585
   Future<Map<String, dynamic>> publishAppStore(
       String clientId,
       String accessToken,
       String appId,
-      ) async{
+      String fileName,
+      ) async {
     Map<String, dynamic> headers = {
       'client_id': clientId,
       'Authorization': 'Bearer $accessToken',
       'Content-Type': 'application/json',
     };
-    Map<String, dynamic> query = {
-      'appId': appId,
-    };
+    final String submitUrl = isOhosPackage(fileName)
+        ? 'https://connect-api.cloud.huawei.com/api/publish/v3/app-submit?appid=$appId'
+        : 'https://connect-api.cloud.huawei.com/api/publish/v2/app-submit?appid=$appId';
     try {
       Response response = await _dio.post(
-        'https://connect-api.cloud.huawei.com/api/publish/v2/app-submit?appid=${appId}',
-        //data: query,
+        submitUrl,
         options: Options(headers: headers),
       );
       if (response.statusCode == 200 && response.data['ret']['code'] == 0) {
         return Map<String, dynamic>.from(response.data);
       } else {
-        throw PublishError('applyUpload error: ${response.data}');
+        throw PublishError('app-submit error: ${response.data}');
       }
     } catch (e) {
-      throw PublishError('applyUpload error: ${e.toString()}');
+      throw PublishError('app-submit error: ${e.toString()}');
     }
   }
 
