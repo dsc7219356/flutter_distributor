@@ -54,13 +54,25 @@ class AppPackagePublisherAppGallery extends AppPackagePublisher {
       );
 
       // Apply Package Info (4/4)
-      await applyUploadAndroid(
-        publishConfig.clientId,
-        accessToken,
-        publishConfig.appId,
-        fileName,
-        uploadUrlInfo['objectId'],
-      );
+      // HarmonyOS packages (.hap/.app) use the v3 app-package-info API;
+      // Android packages (.apk/.aab) use the v2 app-file-info API with fileType.
+      if (isOhosPackage(fileName)) {
+        await applyUploadOhos(
+          publishConfig.clientId,
+          accessToken,
+          publishConfig.appId,
+          fileName,
+          uploadUrlInfo['objectId'],
+        );
+      } else {
+        await applyUploadAndroid(
+          publishConfig.clientId,
+          accessToken,
+          publishConfig.appId,
+          fileName,
+          uploadUrlInfo['objectId'],
+        );
+      }
 
       print('华为应用市场要求2分钟后再调发布接口，我先等一分钟试试...');
       await Future.delayed(Duration(minutes: 1));
@@ -73,11 +85,17 @@ class AppPackagePublisherAppGallery extends AppPackagePublisher {
 
       return PublishResult(
         url:
-            'https://developer.huawei.com/consumer/cn/service/josp/agc/index.html#/myApp/10778152/v1847767732263617280',
+            'https://developer.huawei.com/consumer/cn/service/josp/agc/index.html#/myApp/${publishConfig.appId}',
       );
     } catch (e) {
       throw PublishError(e.toString());
     }
+  }
+
+  /// Whether the given file name refers to a HarmonyOS (OHOS) package.
+  bool isOhosPackage(String fileName) {
+    final String ext = fileName.toLowerCase();
+    return ext.endsWith('.hap') || ext.endsWith('.app');
   }
 
   Future<String> getAccessToken(
@@ -193,6 +211,47 @@ class AppPackagePublisherAppGallery extends AppPackagePublisher {
     try {
       Response response = await _dio.put(
         'https://connect-api.cloud.huawei.com/api/publish/v2/app-file-info',
+        queryParameters: query,
+        data: data,
+        options: Options(headers: headers),
+      );
+      if (response.statusCode == 200 && response.data['ret']['code'] == 0) {
+        return Map<String, dynamic>.from(response.data);
+      } else {
+        throw PublishError('applyUpload error: ${response.data}');
+      }
+    } catch (e) {
+      throw PublishError('applyUpload error: ${e.toString()}');
+    }
+  }
+
+  /// Apply package info for a HarmonyOS (OHOS) package via the v3 API.
+  /// Unlike Android (v2 app-file-info with fileType), the OHOS flow uses the
+  /// v3 app-package-info endpoint with fileName + objectId and no fileType —
+  /// the platform is implied by the app's registration on AppGallery Connect.
+  Future<Map<String, dynamic>> applyUploadOhos(
+      String clientId,
+      String accessToken,
+      String appId,
+      String fileName,
+      String objectId,
+      ) async {
+    Map<String, dynamic> headers = {
+      'client_id': clientId,
+      'Authorization': 'Bearer $accessToken',
+    };
+    Map<String, dynamic> query = {
+      'appId': appId,
+      'releaseType': 1,
+      'releasePhase': 0,
+    };
+    Map<String, dynamic> data = {
+      'fileName': fileName,
+      'objectId': objectId,
+    };
+    try {
+      Response response = await _dio.put(
+        'https://connect-api.cloud.huawei.com/api/publish/v3/app-package-info',
         queryParameters: query,
         data: data,
         options: Options(headers: headers),

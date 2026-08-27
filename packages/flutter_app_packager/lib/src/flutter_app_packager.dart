@@ -9,6 +9,7 @@ class FlutterAppPackager {
   final List<AppPackageMaker> _makers = [
     AppPackageMakerAab(),
     AppPackageMakerApk(),
+    AppPackageMakerApp(),
     AppPackageMakerAppImage(),
     AppPackageMakerDeb(),
     AppPackageMakerDirect('linux'),
@@ -16,6 +17,7 @@ class FlutterAppPackager {
     AppPackageMakerDirect('web'),
     AppPackageMakerDmg(),
     AppPackageMakerExe(),
+    AppPackageMakerHap(),
     AppPackageMakerIpa(),
     AppPackageMakerMsix(),
     AppPackageMakerPkg(),
