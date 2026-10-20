@@ -54,3 +54,28 @@ Run:
 ```
 flutter_distributor release --name dev
 ```
+
+## Update release notes
+
+Add `update-version-info: true` (default `false`) to `args`. After a successful
+upload the publisher calls the backend `update_version_info` API with:
+
+- `version` from the current project's `pubspec.yaml`
+- `apk_url` of the uploaded artifact (so `bucket-domain` is required when enabled)
+- `remark` from the `PGYER_UPDATE_DESCRIPTION_DETAIL` environment variable
+- `publish_date` as local midnight of the release day, matching how the backend
+  stores and filters it
+- fixed `id`, `update_policy`, `has_bug` and `operator` values
+
+```yaml
+        publish:
+          target: qiniu
+          args:
+            bucket: your bucket
+            bucket-domain: https://dl.example.com
+            update-version-info: true
+```
+
+If the call fails (non-200 or a body whose `result` is not `true`) the package
+is already uploaded, but the publish still throws so the missing release note
+is visible.

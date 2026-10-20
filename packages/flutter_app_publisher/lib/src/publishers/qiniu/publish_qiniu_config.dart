@@ -4,6 +4,7 @@ import 'package:flutter_app_publisher/src/api/app_package_publisher.dart';
 
 const kEnvQiniuAccessKey = 'QINIU_ACCESS_KEY';
 const kEnvQiniuSecretKey = 'QINIU_SECRET_KEY';
+const kEnvPgyerUpdateDescriptionDetail = 'PGYER_UPDATE_DESCRIPTION_DETAIL';
 
 class PublishQiniuConfig extends PublishConfig {
   PublishQiniuConfig({
@@ -12,6 +13,8 @@ class PublishQiniuConfig extends PublishConfig {
     required this.bucket,
     this.bucketDomain,
     this.savekeyPrefix,
+    this.updateVersionInfo = false,
+    this.updateDescription = '',
   });
 
   factory PublishQiniuConfig.parse(
@@ -28,12 +31,29 @@ class PublishQiniuConfig extends PublishConfig {
     if ((secretKey ?? '').isEmpty) {
       throw PublishError('Missing `$kEnvQiniuSecretKey` environment variable.');
     }
+
+    final updateVersionInfo = publishArguments?['update-version-info'] == true ||
+        publishArguments?['update-version-info']?.toString() == 'true';
+
+    if (updateVersionInfo) {
+      final bucketDomain = publishArguments?['bucket-domain'];
+      if ((bucketDomain ?? '').isEmpty) {
+        throw PublishError(
+          '`update-version-info` requires `bucket-domain` to build the apk_url.',
+        );
+      }
+    }
+
     return PublishQiniuConfig(
       accessKey: accessKey!,
       secretKey: secretKey!,
       bucket: publishArguments?['bucket'],
       bucketDomain: publishArguments?['bucket-domain'],
       savekeyPrefix: publishArguments?['savekey-prefix'] ?? '',
+      updateVersionInfo: updateVersionInfo,
+      updateDescription: (environment ?? Platform.environment)
+              [kEnvPgyerUpdateDescriptionDetail] ??
+          '',
     );
   }
 
@@ -42,4 +62,8 @@ class PublishQiniuConfig extends PublishConfig {
   final String bucket;
   String? bucketDomain;
   String? savekeyPrefix;
+  final bool updateVersionInfo;
+  final String updateDescription;
+
+  String get version => pubspec.version.toString();
 }

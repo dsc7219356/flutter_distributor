@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_app_publisher/src/api/app_package_publisher.dart';
 import 'package:flutter_app_publisher/src/publishers/qiniu/publish_qiniu_config.dart';
+import 'package:flutter_app_publisher/src/publishers/qiniu/update_version_info.dart';
 // import 'package:parse_app_package/parse_app_package.dart';
 import 'package:qiniu_sdk_base/qiniu_sdk_base.dart';
 
@@ -71,9 +72,13 @@ class AppPackagePublisherQiniu extends AppPackagePublisher {
           controller: putController,
         ),
       );
+      String url =
+          '${publishConfig.bucketDomain ?? '<bucketDomain>'}/${putResponse.key}';
+      if (publishConfig.updateVersionInfo) {
+        await updateVersionInfoAfterPublish(url, publishConfig);
+      }
       return PublishResult(
-        url:
-            '${publishConfig.bucketDomain ?? '<bucketDomain>'}/${putResponse.key}',
+        url: url,
       );
     } on StorageError catch (error) {
       throw PublishError('${error.code} - ${error.message}');

@@ -54,3 +54,25 @@ releases:
 ```
 flutter_distributor release --name dev
 ```
+
+## 更新发布日志
+
+`args` 中加上 `update-version-info: true`（默认 `false`）后，包上传成功会调用后台
+`update_version_info` 接口写入发布日志：
+
+- `version` 取自当前项目的 `pubspec.yaml`
+- `apk_url` 为上传成功后的下载地址（因此开启时必须配置 `bucket-domain`）
+- `remark` 取自环境变量 `PGYER_UPDATE_DESCRIPTION_DETAIL`
+- `publish_date` 为发布当天本地零点（与后台列表的按天存储/筛选一致）
+- `id`、`update_policy`、`has_bug`、`operator` 为固定值
+
+```yaml
+        publish:
+          target: qiniu
+          args:
+            bucket: your bucket
+            bucket-domain: https://dl.example.com
+            update-version-info: true
+```
+
+接口调用失败（HTTP 非 200 或返回体 `result != true`）时包已上传成功，但会抛出错误提示发布日志未更新。
