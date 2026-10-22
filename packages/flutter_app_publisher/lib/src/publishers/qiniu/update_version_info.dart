@@ -35,9 +35,11 @@ Future<void> updateVersionInfoAfterPublish(
       },
     )).post<dynamic>(kVersionInfoApiUrl, data: body);
   } on DioException catch (error) {
+    final body = error.response?.data;
     throw PublishError(
-      'Package uploaded but update_version_info request failed: '
-      '${error.message}',
+      'Package uploaded but update_version_info failed '
+      '(HTTP ${error.response?.statusCode}): '
+      '${body == null ? error.message : body.toString()}',
     );
   }
 

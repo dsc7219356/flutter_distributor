@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_app_publisher/src/api/app_package_publisher.dart';
+import 'package:pub_semver/pub_semver.dart';
 
 const kEnvQiniuAccessKey = 'QINIU_ACCESS_KEY';
 const kEnvQiniuSecretKey = 'QINIU_SECRET_KEY';
@@ -65,5 +66,9 @@ class PublishQiniuConfig extends PublishConfig {
   final bool updateVersionInfo;
   final String updateDescription;
 
-  String get version => pubspec.version.toString();
+  /// 后台 `version` 字段校验为 `\d+(\.\d+)*`，构建号与预发布标记都要去掉。
+  String get version {
+    final Version v = pubspec.version ?? Version.none;
+    return '${v.major}.${v.minor}.${v.patch}';
+  }
 }
