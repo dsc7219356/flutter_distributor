@@ -58,6 +58,12 @@ class AppPackagePublisherAppGallery extends AppPackagePublisher {
       // Android packages (.apk/.aab) use the v2 app-file-info API with fileType.
       String? pkgId;
       if (isOhosPackage(fileName)) {
+        // 已上架应用无草稿版本，先开新版本草稿，避免 app-package-info 报 204144743。
+        await openNewVersionDraft(
+          publishConfig.clientId,
+          accessToken,
+          publishConfig.appId,
+        );
         final applyResult = await applyUploadOhos(
           publishConfig.clientId,
           accessToken,
@@ -278,6 +284,69 @@ class AppPackagePublisherAppGallery extends AppPackagePublisher {
       }
     } catch (e) {
       throw PublishError('applyUpload error: ${e.toString()}');
+    }
+  }
+
+  /// 查询应用信息（v3 app-info），返回含 appInfo 的完整响应。
+  Future<Map<String, dynamic>> queryAppInfo(
+      String clientId,
+      String accessToken,
+      String appId,
+      ) async {
+    Map<String, dynamic> headers = {
+      'client_id': clientId,
+      'Authorization': 'Bearer $accessToken',
+      'Content-Type': 'application/json',
+    };
+    try {
+      Response response = await _dio.get(
+        'https://connect-api.cloud.huawei.com/api/publish/v3/app-info',
+        queryParameters: {'appId': appId},
+        options: Options(headers: headers),
+      );
+      if (response.statusCode == 200 && response.data['ret']?['code'] == 0) {
+        return Map<String, dynamic>.from(response.data);
+      }
+      throw PublishError('queryAppInfo error: ${response.data}');
+    } catch (e) {
+      throw PublishError('queryAppInfo error: ${e.toString()}');
+    }
+  }
+
+  /// 已上架应用无草稿版本时 app-package-info 会报 204144743，先回写 v3 app-info 开新版本草稿。
+  Future<void> openNewVersionDraft(
+      String clientId,
+      String accessToken,
+      String appId,
+      ) async {
+    final Map<String, dynamic> info =
+        await queryAppInfo(clientId, accessToken, appId);
+    final appInfo = info['appInfo'];
+    if (appInfo is! Map || appInfo.isEmpty) {
+      throw PublishError('openNewVersionDraft error: 未查询到 appInfo，无法开新版本草稿');
+    }
+    // 原样回写已有应用信息，避免覆盖线上隐私政策/分类等；releaseState 为只读状态字段。
+    final Map<String, dynamic> body = Map<String, dynamic>.from(appInfo);
+    body.remove('releaseState');
+    Map<String, dynamic> headers = {
+      'client_id': clientId,
+      'Authorization': 'Bearer $accessToken',
+      'Content-Type': 'application/json',
+    };
+    try {
+      Response response = await _dio.put(
+        'https://connect-api.cloud.huawei.com/api/publish/v3/app-info',
+        queryParameters: {'appId': appId, 'releaseType': 1, 'releasePhase': 0},
+        data: body,
+        options: Options(headers: headers),
+      );
+      if (response.statusCode == 200 && response.data['ret']?['code'] == 0) {
+        print('已调用 v3 app-info 开出新版本草稿。');
+        return;
+      }
+      throw PublishError('openNewVersionDraft error: ${response.data}');
+    } catch (e) {
+      throw PublishError('openNewVersionDraft error: ${e.toString()}');
     }
   }
 
