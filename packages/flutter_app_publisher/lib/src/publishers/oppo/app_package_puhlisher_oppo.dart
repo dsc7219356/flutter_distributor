@@ -212,6 +212,13 @@ class AppPackagePublisherOppo extends AppPackagePublisher {
       }
     }
 
+    // 详情接口对未设置的适配方式返回 0，发布接口只认 1/2，回传会被判「适配方式有误」。
+    // 该字段非必传，非法值直接不传。
+    String adaptiveType = (info['adaptive_type'] ?? '').toString().trim();
+    if (adaptiveType != '1' && adaptiveType != '2') {
+      body.remove('adaptive_type');
+    }
+
     body['pkg_name'] = appPackage.identifier;
     body['version_code'] = appPackage.buildNumber.toString();
     body['app_name'] = (body['app_name'] ?? appPackage.name).toString();
